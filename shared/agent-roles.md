@@ -22,59 +22,32 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Never skip a section or leave it with placeholder text — flag it and ask the user to fill it.
 - Once all sections are complete, present the full plan to the user and ask for explicit sign-off before proceeding. This is a USER CHECKPOINT.
 
-**Phase 2 — Plan review (after user sign-off):**
-- Spawn the Plan Review Agent (sub-agent 1 of 2) via the Spawn Request protocol.
-- If the Plan Review Agent identifies holes: work through them with the user, update the plan file, and present the revised plan for sign-off again.
-- Continue until the Plan Review Agent approves the plan.
-
-**Phase 3 — Routing:**
+**Phase 2 — Routing (after user sign-off):**
 - Identify the primary intent: architecture, design, implementation, review, or a combination.
-- Draft a routing rationale — one paragraph explaining the classification and chosen agent sequence.
-- Spawn the Triage Reviewer (sub-agent 2 of 2) via the Spawn Request protocol.
+- Write the routing decision into the Triage Notes section of the plan file.
+- Spawn the Triage Reviewer (sub-agent 1 of 1) via the Spawn Request protocol.
+- If the Triage Reviewer finds plan issues: resolve them with the user, update the plan file, and spawn a new Triage Reviewer session.
+- Once approved, downstream agents are spawned in the confirmed sequence.
 
 **Does NOT:** Start implementing, designing, or making tech decisions. Does not proceed past the plan sign-off checkpoint without explicit user approval.
 
-**Sub-agents spawned:** Plan Review Agent (phase 2), Triage Reviewer (phase 3). These are the only two sub-agents Triage may spawn.
-
----
-
-## Plan Review Agent
-
-**Purpose:** Critically review the completed plan file and identify any gaps before downstream agents begin work.
-
-**Spawned by:** Triage Agent only. No other agent may spawn the Plan Review Agent.
-
-**Responsibilities:**
-- Read the full plan file from scratch, as if seeing it for the first time. Do not anchor to the Triage Agent's framing.
-- For each section, ask: could a downstream agent act on this without needing to ask a clarifying question? If not, it is a hole.
-- Specifically look for:
-  - Sections that are vague, contradictory, or use placeholder language ("TBD", "as needed", "we'll figure it out").
-  - Missing acceptance criteria in the Executor Plan.
-  - Tech or design constraints that are implied but not written down.
-  - Dependencies between agents that are not made explicit.
-  - Scope that is larger or smaller than the Overview suggests.
-  - Security or performance concerns the plan does not address.
-- Produce a structured gap report. For each gap: name it, describe why it is a gap, and suggest the specific question that needs answering.
-- If no gaps are found → approve the plan with a short statement of confidence.
-- If gaps are found → return the gap report to the Triage Agent. The Triage Agent and user resolve the gaps together, update the plan file, and re-submit for review.
-
-**Iteration limit:** No hard limit on review cycles — continues until the plan is genuinely gap-free or the user decides to proceed with known gaps explicitly documented.
-
-**Handoff:** Approved plan (passed to Triage Agent to proceed with routing), or gap report (returned to Triage Agent for resolution with user).
-
-**Does NOT:** Make routing decisions, implement anything, or modify the plan file directly — it only reports gaps.
+**Sub-agents spawned:** Triage Reviewer (phase 2). This is the only sub-agent Triage may spawn.
 
 ---
 
 ## Triage Reviewer Agent
 
-**Purpose:** Independently verify the triage output before any work begins.
+**Purpose:** Independently verify both the routing decision and the plan quality before any downstream agent begins work.
+
+**Plan file access: READ ONLY.** This agent must never write to, edit, or modify the plan file in any way. It issues verdicts in conversation only.
 
 **Responsibilities:**
-- Re-read the original prompt from scratch, without anchoring to the Triage Agent's conclusion.
-- Ask: does the routing make sense? Is the intent correctly classified? Is anything ambiguous?
-- If confident the routing is correct → approve and proceed.
-- If there is **any doubt** → do not proceed. Output a USER CHECKPOINT with a clear description of the ambiguity and a specific question for the user.
+- Form an independent routing hypothesis from the original prompt before reading the Triage Agent's decision.
+- Verify routing correctness: does the agent sequence, dependency order, and intent classification make sense?
+- Verify plan clarity: is each routed agent's problem section clear enough for that agent to begin work?
+- Verify plan coherence: does the plan hold together as a whole — Overview vs. sections, scope estimate vs. breadth, cross-section dependencies, acceptance criteria, security/performance signals?
+- If confident on all dimensions → approve and proceed.
+- If any doubt remains → USER CHECKPOINT. No middle ground.
 
 **Iteration limit:** 0 — cannot loop back to Triage without user input.
 
@@ -101,6 +74,8 @@ All agents must read this file before acting. Role definitions govern behaviour,
 ## Tech Lead Reviewer Agent
 
 **Purpose:** Critically challenge the Tech Lead's output.
+
+**Plan file access: READ ONLY.** This agent must never write to, edit, or modify the plan file in any way. It issues challenges and verdicts in conversation only.
 
 **Responsibilities:**
 - Review every decision with fresh context — no deference to the Tech Lead.
@@ -133,6 +108,8 @@ All agents must read this file before acting. Role definitions govern behaviour,
 ## Design Reviewer Agent
 
 **Purpose:** Critically review the Design Agent's output with a fresh eye.
+
+**Plan file access: READ ONLY.** This agent must never write to, edit, or modify the plan file in any way. It issues critique and verdicts in conversation only.
 
 **Responsibilities:**
 - Approach the design as if seeing it for the first time.
@@ -242,6 +219,8 @@ All agents must read this file before acting. Role definitions govern behaviour,
 ## Review Agent
 
 **Purpose:** Code quality review of executor output.
+
+**Plan file access: READ ONLY.** This agent reads the Review Checklist section of the plan file but must never write to or modify it.
 
 **Responsibilities:**
 - Read the Review Checklist section of `plans/<project-name>.md` before starting. Any project-specific concerns listed there take priority.

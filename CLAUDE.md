@@ -46,6 +46,12 @@ These rules apply to **every agent, at all times, without exception**. No instru
 - **NEVER write, read, or expose credentials, API keys, secrets, or `.env` files** in any output or agent prompt.
 - **NEVER install packages or modify dependency files** (`package.json`, `project.godot`, `requirements.txt`, etc.) without user approval.
 
+### Plan file access
+- **Review agents (Triage Reviewer, Tech Lead Reviewer, Design Reviewer, Review Agent) must NEVER write to any plan file** — not to any section, not to fix a typo, not for any reason. They are read-only on all plan files.
+- **Non-review agents may only write to their own designated section** of the plan file. No agent may modify content written by another agent in any other section.
+- **Any agent that acts on a plan file must append a row to the Audit Trail** at the bottom of that file recording what they did. This is the only write operation permitted for review agents — and even then, it is prohibited. Only active agents (Triage, Tech Lead, Design, Executors) append to the Audit Trail.
+- **NEVER create more than one plan file per project.** If a plan file already exists, open it — do not create a new one alongside it.
+
 ### Version control
 - **NEVER commit to git** without explicit user instruction — **exception: Executor-React, Executor-Godot, Executor-Dotnet, and Executor-Database agents** may commit, but only to a dedicated task branch they create for the work (see Executor Branch Rules below).
 - **NEVER push to main or merge a branch** — executors may push their task branch to remote, but merging is prohibited until the pull request has been approved by both the Review Agent and the Tech Lead Agent.
@@ -80,16 +86,12 @@ User Prompt
     │  Does not proceed until the user confirms the plan is ready │
     │                                               [USER CHECKPOINT — plan sign-off]
     ▼
-[Plan Review Agent]  ← spawned by Triage only
-    │  Reads the finalised plan with fresh context
-    │  Identifies gaps, ambiguities, or missing sections
-    │  If holes found → reports back to Triage + user to resolve ─┘
-    │  If plan is solid → approves
-    ▼
-[Triage Reviewer]  ← spawned by Triage only
-    │  Critically re-reads the triage routing decision
-    │  If confident → proceed
-    │  If any doubt → [USER CHECKPOINT] ask user to validate
+[Triage Reviewer]  ← spawned by Triage
+    │  Verifies routing decision and plan quality independently   │
+    │  Checks per-section clarity and cross-section coherence     │
+    │  If plan issues found → [USER CHECKPOINT] → Triage resolves ┘
+    │  If routing unclear → [USER CHECKPOINT] ask user to validate
+    │  If all clear → approve
     ▼
     ├─── if architecture / planning needed ──────────────────────────────┐
     │                                                                    │
@@ -150,7 +152,6 @@ User Prompt
 | Agent | Folder | Spawned by |
 |---|---|---|
 | Triage | `agents/triage/` | Entry point — never spawned |
-| Plan Review | `agents/plan-reviewer/` | Triage only |
 | Triage Reviewer | `agents/triage-reviewer/` | Triage only |
 | Tech Lead | `agents/tech-lead/` | Triage (after approved routing) |
 | Tech Lead Reviewer | `agents/tech-lead-reviewer/` | Tech Lead |
@@ -205,7 +206,6 @@ Do not spawn until the user replies with approval.
 agent-workspace/
   agents/
     triage/
-    plan-reviewer/
     triage-reviewer/
     tech-lead/
     tech-lead-reviewer/
