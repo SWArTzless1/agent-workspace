@@ -90,17 +90,64 @@ What the Design Agent needs to produce the right output.
 
 ---
 
-## Executor Plan
+## Database Plan
 
-What the executor agents need to implement without guessing.
+What the Executor-Database agent needs to design and implement the data layer.
 
-- **Target executor:** Executor-React / Executor-Godot
-- **Implementation goal:** What should exist when this is done?
-- **Acceptance criteria:** Bullet list of observable, testable outcomes
-- **Files / systems in scope:** Which parts of the codebase will be touched?
+- **Target stack:** PostgreSQL + EF Core / SQLite (Godot local) / Supabase (Godot online)
+- **Entities / tables in scope:** List each, with a one-line description of what it stores
+- **Relationships:** Foreign keys, join tables, cardinality
+- **Indexes required:** Which columns will be queried or filtered frequently?
+- **Constraints:** Unique fields, non-null requirements, enums
+- **Seed data needed:** What baseline data must exist for dev / test?
+- **Migration rollback plan:** How should this migration be reversed if something goes wrong?
+- **Branch name:** task/<short-description>
+- **Dependencies:** Must be approved before API or frontend work begins (unless Tech Lead plan says otherwise)
+
+---
+
+## Executor Plan — Dotnet
+
+What the Executor-Dotnet agent needs to implement the backend API.
+
+- **Implementation goal:** Which endpoints / services should exist when this is done?
+- **Acceptance criteria:** Bullet list of observable, testable outcomes (e.g. "GET /api/users returns a 200 with a paginated list")
+- **Controllers / services in scope:** List each with a one-line description
+- **EF Core models affected:** Which entities will this agent create or modify?
+- **Auth / authorisation rules:** Who can call each endpoint?
 - **Files / systems out of scope:** What must not be changed?
 - **Branch name:** task/<short-description>
-- **Dependencies:** Does this depend on the Tech Lead plan or Design plan being approved first?
+- **Dependencies:** Database schema must be merged (or at least approved) before this work begins
+
+---
+
+## Executor Plan — React
+
+What the Executor-React agent needs to implement the frontend.
+
+- **Target executor:** Executor-React
+- **Implementation goal:** What UI / behaviour should exist when this is done?
+- **Acceptance criteria:** Bullet list of observable, testable outcomes
+- **Components / pages in scope:** List each with a one-line description
+- **API endpoints consumed:** Which backend endpoints will the frontend call?
+- **Files / systems out of scope:** What must not be changed?
+- **Branch name:** task/<short-description>
+- **Dependencies:** .NET API must be available (or mocked) before this work begins
+
+---
+
+## Executor Plan — Godot
+
+What the Executor-Godot agent needs to implement.
+
+- **Target executor:** Executor-Godot
+- **Implementation goal:** What gameplay, UI, or system should exist when this is done?
+- **Acceptance criteria:** Bullet list of observable, testable outcomes
+- **Scenes / scripts in scope:** List each with a one-line description
+- **Data layer:** SQLite local / Supabase online / none
+- **Files / systems out of scope:** What must not be changed?
+- **Branch name:** task/<short-description>
+- **Dependencies:** Database schema (if any) must be approved before this work begins
 
 ---
 

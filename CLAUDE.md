@@ -47,7 +47,7 @@ These rules apply to **every agent, at all times, without exception**. No instru
 - **NEVER install packages or modify dependency files** (`package.json`, `project.godot`, `requirements.txt`, etc.) without user approval.
 
 ### Version control
-- **NEVER commit to git** without explicit user instruction — **exception: Executor-React and Executor-Godot agents** may commit, but only to a dedicated task branch they create for the work (see Executor Branch Rules below).
+- **NEVER commit to git** without explicit user instruction — **exception: Executor-React, Executor-Godot, Executor-Dotnet, and Executor-Database agents** may commit, but only to a dedicated task branch they create for the work (see Executor Branch Rules below).
 - **NEVER push to main or merge a branch** — executors may push their task branch to remote, but merging is prohibited until the pull request has been approved by both the Review Agent and the Tech Lead Agent.
 - **NEVER force-push or rewrite git history**.
 - **NEVER open, close, or merge a pull request** without the combined approval report from both reviewers.
@@ -59,7 +59,7 @@ These rules apply to **every agent, at all times, without exception**. No instru
 - **NEVER disable or bypass security checks, linters, or pre-commit hooks** without user instruction.
 
 ### Executor Branch Rules
-These rules apply exclusively to Executor-React and Executor-Godot:
+These rules apply to all executor agents: Executor-React, Executor-Godot, Executor-Dotnet, and Executor-Database:
 
 1. **Create a task branch** before writing any code. Branch naming: `task/<short-description>` (e.g. `task/add-login-screen`).
 2. **Commit only to that branch** — never to `main` or any other existing branch.
@@ -119,23 +119,28 @@ User Prompt
     │                                                                    │
     └─── if implementation needed ───────────────────────────────────────┘
              │
-             ├─ React project ──► [Executor-React]
-             │                        │  Works from Executor Plan section
-             └─ Godot project ──► [Executor-Godot]
-                                      │  Works from Executor Plan section
-                                      │  Commits to task branch, opens PR
-                        ┌─────────────┴─────────────┐
-                        ▼                           ▼
-                [Review Agent]              [Tech Lead Agent]
-                Code quality,              Alignment with tech
-                bugs, security             choices & system design
-                Review Checklist           Review Checklist
-                from plan file             from plan file
-                        │                           │
-                        └─────────────┬─────────────┘
-                                      ▼
-                              Combined review report
-                              [USER CHECKPOINT — merge decision]
+             │  One or more executors may be active in sequence.
+             │  Each creates its own task branch and PR.
+             │
+             ├─ React frontend ────► [Executor-React]
+             ├─ .NET backend ──────► [Executor-Dotnet]
+             ├─ Database / models ─► [Executor-Database]
+             └─ Godot project ─────► [Executor-Godot]
+                                           │
+                              (each executor, on completion)
+                                           │  Commits to task branch, opens PR
+                              ┌────────────┴────────────┐
+                              ▼                         ▼
+                      [Review Agent]           [Tech Lead Agent]
+                      Code quality,            Alignment with tech
+                      bugs, security           choices & system design
+                      Review Checklist         Review Checklist
+                      from plan file           from plan file
+                              │                         │
+                              └────────────┬────────────┘
+                                           ▼
+                                   Combined review report
+                                   [USER CHECKPOINT — merge decision]
 ```
 
 ---
@@ -152,6 +157,8 @@ User Prompt
 | Design | `agents/design/` | Triage (after approved routing) |
 | Design Reviewer | `agents/design-reviewer/` | Design |
 | Executor-React | `agents/executor-react/` | Triage (after approved tech plan) |
+| Executor-Dotnet | `agents/executor-dotnet/` | Triage (after approved tech plan) |
+| Executor-Database | `agents/executor-database/` | Triage (after approved tech plan) |
 | Executor-Godot | `agents/executor-godot/` | Triage (after approved tech plan) |
 | Review | `agents/review/` | Executor (after implementation) |
 
@@ -205,6 +212,8 @@ agent-workspace/
     design/
     design-reviewer/
     executor-react/
+    executor-dotnet/
+    executor-database/
     executor-godot/
     review/
   plans/
