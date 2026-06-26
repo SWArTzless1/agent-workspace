@@ -74,17 +74,28 @@ These rules apply exclusively to Executor-React and Executor-Godot:
 User Prompt
     │
     ▼
-[Triage Agent]
-    │  Classifies intent, selects downstream agent(s), drafts routing rationale
+[Triage Agent] ◄──────────────────────────────────────────────────┐
+    │  Opens or creates plans/<project>.md                        │
+    │  Iterates on the plan WITH the user, section by section     │
+    │  Does not proceed until the user confirms the plan is ready │
+    │                                               [USER CHECKPOINT — plan sign-off]
     ▼
-[Triage Reviewer]
-    │  Critically re-reads the triage. If confident → proceed.
-    │  If any doubt → [USER CHECKPOINT] ask user to validate before continuing.
+[Plan Review Agent]  ← spawned by Triage only
+    │  Reads the finalised plan with fresh context
+    │  Identifies gaps, ambiguities, or missing sections
+    │  If holes found → reports back to Triage + user to resolve ─┘
+    │  If plan is solid → approves
+    ▼
+[Triage Reviewer]  ← spawned by Triage only
+    │  Critically re-reads the triage routing decision
+    │  If confident → proceed
+    │  If any doubt → [USER CHECKPOINT] ask user to validate
     ▼
     ├─── if architecture / planning needed ──────────────────────────────┐
     │                                                                    │
     │   [Tech Lead]                                                      │
     │       │  Produces architecture decisions, tech choices, task breakdown
+    │       │  Draws on the Tech Lead Plan section of plans/<project>.md │
     │       ▼                                                            │
     │   [Tech Lead Reviewer]                                             │
     │       │  Challenges every decision. Can push back and let Tech Lead │
@@ -97,6 +108,7 @@ User Prompt
     │                                                                    │
     │   [Design Agent]                                                   │
     │       │  Produces design proposals, component structure, visuals   │
+    │       │  Draws on the Design Plan section of plans/<project>.md    │
     │       ▼                                                            │
     │   [Design Reviewer]                                                │
     │       │  Reviews with fresh context, extra critical eye.           │
@@ -108,36 +120,40 @@ User Prompt
     └─── if implementation needed ───────────────────────────────────────┘
              │
              ├─ React project ──► [Executor-React]
-             │                        │
+             │                        │  Works from Executor Plan section
              └─ Godot project ──► [Executor-Godot]
-                                      │
+                                      │  Works from Executor Plan section
+                                      │  Commits to task branch, opens PR
                         ┌─────────────┴─────────────┐
                         ▼                           ▼
                 [Review Agent]              [Tech Lead Agent]
                 Code quality,              Alignment with tech
                 bugs, security             choices & system design
+                Review Checklist           Review Checklist
+                from plan file             from plan file
                         │                           │
                         └─────────────┬─────────────┘
                                       ▼
                               Combined review report
-                              presented to user
+                              [USER CHECKPOINT — merge decision]
 ```
 
 ---
 
 ## Agent Roster
 
-| Agent | Folder | Owned by |
+| Agent | Folder | Spawned by |
 |---|---|---|
-| Triage | `agents/triage/` | First agent on every prompt |
-| Triage Reviewer | `agents/triage-reviewer/` | Spawned by Triage |
-| Tech Lead | `agents/tech-lead/` | Spawned after approved triage |
-| Tech Lead Reviewer | `agents/tech-lead-reviewer/` | Spawned by Tech Lead |
-| Design | `agents/design/` | Spawned after approved triage |
-| Design Reviewer | `agents/design-reviewer/` | Spawned by Design |
-| Executor-React | `agents/executor-react/` | Spawned after approved tech plan |
-| Executor-Godot | `agents/executor-godot/` | Spawned after approved tech plan |
-| Review | `agents/review/` | Spawned after executor completes |
+| Triage | `agents/triage/` | Entry point — never spawned |
+| Plan Review | `agents/plan-reviewer/` | Triage only |
+| Triage Reviewer | `agents/triage-reviewer/` | Triage only |
+| Tech Lead | `agents/tech-lead/` | Triage (after approved routing) |
+| Tech Lead Reviewer | `agents/tech-lead-reviewer/` | Tech Lead |
+| Design | `agents/design/` | Triage (after approved routing) |
+| Design Reviewer | `agents/design-reviewer/` | Design |
+| Executor-React | `agents/executor-react/` | Triage (after approved tech plan) |
+| Executor-Godot | `agents/executor-godot/` | Triage (after approved tech plan) |
+| Review | `agents/review/` | Executor (after implementation) |
 
 Full role definitions, responsibilities, and handoff protocols are in `shared/agent-roles.md`.
 
@@ -182,6 +198,7 @@ Do not spawn until the user replies with approval.
 agent-workspace/
   agents/
     triage/
+    plan-reviewer/
     triage-reviewer/
     tech-lead/
     tech-lead-reviewer/
@@ -190,12 +207,15 @@ agent-workspace/
     executor-react/
     executor-godot/
     review/
-  projects/         # One subfolder per active project
+  plans/
+    README.md              # How to write good plans
+    <project-name>.md      # One plan file per project, sections per agent
+  projects/                # One subfolder per active project
   shared/
-    agent-roles.md  # Detailed role definitions
-    conventions.md  # Coding style all executors follow
-    glossary.md     # Shared terminology
-  CLAUDE.md         # This file
+    agent-roles.md         # Detailed role definitions
+    conventions.md         # Coding style all executors follow
+    glossary.md            # Shared terminology
+  CLAUDE.md                # This file
 ```
 
 Projects live under `projects/<project-name>/`. If a project folder contains its own `CLAUDE.md`, those rules take precedence over workspace conventions for that project.

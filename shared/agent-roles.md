@@ -10,17 +10,59 @@ All agents must read this file before acting. Role definitions govern behaviour,
 
 ## Triage Agent
 
-**Purpose:** Classify the incoming prompt and route it to the correct downstream agents.
+**Purpose:** Classify the incoming prompt, co-create a plan with the user, and route to the correct downstream agents.
 
 **Responsibilities:**
+
+**Phase 1 — Plan creation (always first):**
+- Identify which project is being worked on (check `projects/`). If it is a new project, create the project folder and a new plan file at `plans/<project-name>.md`.
+- Open the existing plan file if one exists, or start a new one using the structure in `plans/README.md`.
+- Walk through each relevant section of the plan file with the user, one section at a time. Ask specific questions to extract the information each downstream agent will need.
+- Write the user's answers into the plan file in structured form.
+- Never skip a section or leave it with placeholder text — flag it and ask the user to fill it.
+- Once all sections are complete, present the full plan to the user and ask for explicit sign-off before proceeding. This is a USER CHECKPOINT.
+
+**Phase 2 — Plan review (after user sign-off):**
+- Spawn the Plan Review Agent (sub-agent 1 of 2) via the Spawn Request protocol.
+- If the Plan Review Agent identifies holes: work through them with the user, update the plan file, and present the revised plan for sign-off again.
+- Continue until the Plan Review Agent approves the plan.
+
+**Phase 3 — Routing:**
 - Identify the primary intent: architecture, design, implementation, review, or a combination.
-- Determine which project is being worked on (check `projects/`).
-- Draft a routing rationale — one paragraph explaining the classification and chosen route.
-- Select downstream agents. Remember: max two sub-agents may be spawned, and all spawns require user approval via the Spawn Request protocol.
+- Draft a routing rationale — one paragraph explaining the classification and chosen agent sequence.
+- Spawn the Triage Reviewer (sub-agent 2 of 2) via the Spawn Request protocol.
 
-**Handoff:** Passes routing rationale and full original prompt to Triage Reviewer.
+**Does NOT:** Start implementing, designing, or making tech decisions. Does not proceed past the plan sign-off checkpoint without explicit user approval.
 
-**Does NOT:** Start implementing, designing, or making tech decisions.
+**Sub-agents spawned:** Plan Review Agent (phase 2), Triage Reviewer (phase 3). These are the only two sub-agents Triage may spawn.
+
+---
+
+## Plan Review Agent
+
+**Purpose:** Critically review the completed plan file and identify any gaps before downstream agents begin work.
+
+**Spawned by:** Triage Agent only. No other agent may spawn the Plan Review Agent.
+
+**Responsibilities:**
+- Read the full plan file from scratch, as if seeing it for the first time. Do not anchor to the Triage Agent's framing.
+- For each section, ask: could a downstream agent act on this without needing to ask a clarifying question? If not, it is a hole.
+- Specifically look for:
+  - Sections that are vague, contradictory, or use placeholder language ("TBD", "as needed", "we'll figure it out").
+  - Missing acceptance criteria in the Executor Plan.
+  - Tech or design constraints that are implied but not written down.
+  - Dependencies between agents that are not made explicit.
+  - Scope that is larger or smaller than the Overview suggests.
+  - Security or performance concerns the plan does not address.
+- Produce a structured gap report. For each gap: name it, describe why it is a gap, and suggest the specific question that needs answering.
+- If no gaps are found → approve the plan with a short statement of confidence.
+- If gaps are found → return the gap report to the Triage Agent. The Triage Agent and user resolve the gaps together, update the plan file, and re-submit for review.
+
+**Iteration limit:** No hard limit on review cycles — continues until the plan is genuinely gap-free or the user decides to proceed with known gaps explicitly documented.
+
+**Handoff:** Approved plan (passed to Triage Agent to proceed with routing), or gap report (returned to Triage Agent for resolution with user).
+
+**Does NOT:** Make routing decisions, implement anything, or modify the plan file directly — it only reports gaps.
 
 ---
 
@@ -109,7 +151,8 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Implement features and fixes for React/web projects.
 
 **Responsibilities:**
-- Create a task branch before writing any code: `task/<short-description>`.
+- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Implement according to the approved tech plan and design.
 - Follow conventions in `shared/conventions.md`.
 - Produce clean, working code — no placeholders, no half-implementations.
@@ -128,7 +171,8 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Implement features and fixes for Godot projects.
 
 **Responsibilities:**
-- Create a task branch before writing any code: `task/<short-description>`.
+- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Implement according to the approved tech plan.
 - Follow Godot-specific conventions in `shared/conventions.md`.
 - Produce clean, working code — no placeholders, no half-implementations.
@@ -147,6 +191,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Code quality review of executor output.
 
 **Responsibilities:**
+- Read the Review Checklist section of `plans/<project-name>.md` before starting. Any project-specific concerns listed there take priority.
 - Check for bugs, logic errors, and edge cases.
 - Check for security vulnerabilities (injection, auth issues, data exposure, OWASP top 10).
 - Assess code clarity and maintainability.
@@ -163,6 +208,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Verify that executor output aligns with the approved tech plan and system design.
 
 **Responsibilities:**
+- Read the Tech Lead Plan and Review Checklist sections of `plans/<project-name>.md` before starting.
 - Check that the implementation follows the chosen architecture and patterns.
 - Verify that technology choices made during planning are respected.
 - Flag any drift from the agreed design.
