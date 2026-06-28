@@ -413,17 +413,17 @@ Run this via the Bash tool immediately after writing the status file(s) and befo
 
 *1 agent:*
 ```bash
-wt split-pane -V --size 0.5 --title "<AgentName>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug>'" ";" move-focus left
+wt split-pane -V --size 0.5 --title "<AgentName>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug>'" ";" move-focus left
 ```
 
 *2 agents in parallel:*
 ```bash
-wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.5 --title "<Agent2>" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
+wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.5 --title "<Agent2>" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
 ```
 
 *3 agents in parallel:*
 ```bash
-wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.333 --title "<Agent3>" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug3>'" ";" move-focus up ";" split-pane -H --size 0.5 --title "<Agent2>" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
+wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.333 --title "<Agent3>" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug3>'" ";" move-focus up ";" split-pane -H --size 0.5 --title "<Agent2>" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
 ```
 
 The `move-focus left` at the end returns keyboard focus to the main chat pane automatically.
