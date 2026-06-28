@@ -83,6 +83,8 @@ Do **not** read the Tech Lead Plan solution section, any Tech Lead Notes, or any
 
 Also read `shared/conventions.md` for existing design conventions and component patterns.
 
+Also read `projects/<project-name>/docs/project-brief.md` if it exists — this is the project's north star, describing the high-level goal and who the product serves. Use it to ground your design in the actual user need, not just the plan section. If any design decision or instruction appears to directly contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
+
 Also check whether `projects/<project-name>/docs/design-system.md` exists. If it does, read it — its colour palette, typography, button variants, spacing, and component patterns are non-negotiable constraints that this design must respect. Do not invent colours or component styles that contradict the established design system.
 
 **Step 2 — Comprehension test.**
@@ -645,6 +647,7 @@ Written to `projects/<project-name>/docs/design-system.md`.
 ```
 
 ### SPAWN REQUEST
+Model: haiku
 (Follow the standard Spawn Request protocol from CLAUDE.md exactly.)
 
 ---

@@ -98,6 +98,8 @@ Open `plans/<project-name>.md` and read every section. Do not skim. Pay particul
 
 Also read `shared/conventions.md` for coding and stack conventions all executors must follow.
 
+Also read `projects/<project-name>/docs/project-brief.md` if it exists — this is the project's north star, describing the high-level goal and who it serves. Use it to understand the context behind the technical work. If any plan section, technical decision, or user instruction appears to directly contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
+
 **Step 2 — Comprehension test.**
 
 After reading, answer the following questions. If you cannot answer any of them, re-read the relevant section before moving on. Once you can answer all eight, output the COMPREHENSION SUMMARY block below — this must appear in your response before any technical analysis begins.
@@ -529,6 +531,7 @@ Does this look right before I submit it to the Tech Lead Reviewer?
 ```
 
 ### SPAWN REQUEST
+Model: sonnet
 (Follow the standard Spawn Request protocol from CLAUDE.md exactly.)
 
 ### Alignment report

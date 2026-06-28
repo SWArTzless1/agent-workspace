@@ -239,6 +239,7 @@ Read the following from `plans/<project-name>.md`:
 - `### Design Executor Notes` and `### Game Design Executor Notes` (if present) — data implications from design or game design decisions (e.g., a design decision requiring a specific sort order implies an index)
 
 Also read:
+- `projects/<project-name>/docs/project-brief.md` — if it exists: the project's north star and high-level goal. Use it to understand what data the product ultimately needs to support. If any schema decision or instruction appears to contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
 - `shared/conventions.md` — SQL formatting, naming, and documentation requirements
 
 **Existing schema survey — do this before writing PLAN READ-AND-VERIFY.**
@@ -693,6 +694,7 @@ Ready to open PR: YES / NO
 ```
 
 ### SPAWN REQUEST (Review Agent)
+Model: sonnet
 (Follow the standard Spawn Request protocol from `CLAUDE.md` exactly, including the Review Agent prompt with the full context listed in Phase 6.)
 
 ---

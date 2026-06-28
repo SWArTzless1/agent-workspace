@@ -251,6 +251,7 @@ Read the following from `plans/<project-name>.md`:
 - `### Tech Lead Feasibility Assessment` — any infeasibility decisions affecting your scope (if present)
 
 Also read:
+- `projects/<project-name>/docs/project-brief.md` — if it exists: the project's north star and high-level goal. Use it to understand what the product is trying to achieve and for whom. If any instruction or plan section appears to contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
 - `shared/conventions.md` — formatting requirements, naming conventions, documentation standards
 
 **Note on Design Notes:** The Design Agent does not write a `### Design Notes` section for Executor-Dotnet. The Dotnet executor handles backend API concerns, not user-facing UI. Cross-executor design constraints are in `### Design Executor Notes` in the Feasibility Report only.
@@ -720,6 +721,7 @@ Ready to open PR: YES / NO
 ```
 
 ### SPAWN REQUEST (Review Agent)
+Model: sonnet
 (Follow the standard Spawn Request protocol from `CLAUDE.md` exactly, including the Review Agent prompt with the full context listed in Phase 6.)
 
 ---

@@ -55,7 +55,8 @@ Before looking at any code, read:
 
 1. `shared/conventions.md` — the coding standards every executor must follow
 2. `CLAUDE.md` — the absolute prohibitions, especially the security section
-3. `plans/<project-name>.md` — in full, with emphasis on:
+3. `projects/<project-name>/docs/project-brief.md` — if it exists: the project's north star and high-level goal. Use it to understand what the project is trying to achieve; flag anything in the PR that appears to work against the stated goal or user need as a MAJOR finding.
+4. `plans/<project-name>.md` — in full, with emphasis on:
    - `## Review Checklist` — project-specific concerns raised by Triage. These take priority over your standard checklist — if the Triage Agent flagged "make sure auth tokens are never logged," look for that specifically.
    - The plan sections specified in the spawn prompt (Tech Lead Notes, Design Notes, Game Design Notes as applicable)
    - `## Triage Notes` — overall feature scope and routing rationale

@@ -49,6 +49,8 @@ Before opening a plan file or routing anything, read the prompt carefully and as
 - If multiple project folders could match, list them and ask the user to confirm which one.
 - If the project name is unclear from the prompt, ask before proceeding.
 
+**Project brief:** Once the project folder is identified, check for `projects/<project-name>/docs/project-brief.md`. If it exists, read it in full — this is the project's north star, describing the high-level goal the project is trying to achieve and who it serves. Use it to anchor every plan section you write and every routing decision you make. If any user instruction or plan direction appears to directly contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
+
 **Plan file naming:** If this is a new plan (no existing plan file for this project), agree a filename with the user before creating anything:
 
 > "What would you like to call this plan? It will be saved as `plans/<your-name>.md`. I'd suggest `plans/<suggested-slug>.md` based on your prompt — does that work, or would you prefer something else?"
@@ -212,6 +214,7 @@ Scope: <Small / Medium / Large> — <basis>
 ```
 
 ### SPAWN REQUEST
+Model: sonnet
 (Follow the standard Spawn Request protocol from CLAUDE.md exactly.)
 
 ---

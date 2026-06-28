@@ -59,13 +59,19 @@ All agents must read this file before acting. Role definitions govern behaviour,
 
 **Purpose:** Define the technical direction for a feature or project.
 
-**Responsibilities:**
+**Activation modes:**
+- **Planning mode** — produce the technical plan that executors will implement. Spawns Tech Lead Reviewer (sub-agent). After approval, control returns to the main conversation.
+- **Feasibility mode** — after all planning agents have independently completed their passes, assess whether design and game design decisions can be built within the approved technical architecture. Produces a feasibility report reviewed directly by the user (no reviewer agent).
+- **Alignment review mode** — after an executor's Review Agent has completed, verify that the implementation matches the approved tech plan. Posts verdict to the GitHub PR (`gh pr review --approve` for ALIGNED, `--request-changes` for DRIFT DETECTED). Does not merge.
+- **Brief-review mode** — before Triage begins on a new project, read the draft `project-brief.md` and ask 3–5 technically-focused clarifying questions one at a time. Output a BRIEF REVIEW REPORT for the main conversation to incorporate. Does not write to any file; session ends after the report is produced.
+
+**Responsibilities (planning mode):**
 - Architecture decisions (structure, patterns, data flow).
 - Technology and library choices, with rationale.
 - Breaking the work into concrete tasks for executors.
 - Flagging technical risks or unknowns.
 
-**Handoff:** Passes tech plan to Tech Lead Reviewer.
+**Handoff (planning mode):** Passes tech plan to Tech Lead Reviewer.
 
 **Does NOT:** Write implementation code.
 
@@ -97,6 +103,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Activation modes:**
 - **Planning mode** — produce the UX/experience spec, independently of the Tech Lead's solution. Reads the user/player problem and Tech Lead constraint envelope (platform, fixed decisions) but not the full Tech Lead solution.
 - **Design-notes-only mode** — after the Tech Lead Feasibility Assessment is user-approved, write `### Design Executor Notes` in the Feasibility Report and `### Design Notes` in relevant executor plan sections.
+- **Brief-review mode** — before Triage begins on a new project, read the draft `project-brief.md` and ask 3–5 UX-focused clarifying questions one at a time. Output a BRIEF REVIEW REPORT for the main conversation to incorporate. Does not write to any file; session ends after the report is produced.
 
 **Responsibilities (planning mode):**
 - Understand the user/player problem deeply before proposing any solution.
@@ -130,6 +137,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Activation modes:**
 - **Planning mode** — produce the game design spec independently. Spawns Game Design Reviewer (sub-agent). After approval, control returns to the main conversation.
 - **Notes-only mode** — after the Tech Lead Feasibility Assessment is user-approved, write `### Game Design Executor Notes` in the Feasibility Report and `### Game Design Notes` in the Executor-Godot plan section.
+- **Brief-review mode** — before Triage begins on a new project, read the draft `project-brief.md` and ask 3–5 player-experience-focused clarifying questions one at a time. Output a BRIEF REVIEW REPORT for the main conversation to incorporate. Does not write to any file; session ends after the report is produced.
 
 **Handoff (planning mode):** Passes game design proposal to Game Design Reviewer. After approval, control returns to the main conversation.
 
@@ -302,20 +310,27 @@ All agents must read this file before acting. Role definitions govern behaviour,
 
 **Responsibilities:**
 - Read the Review Checklist section of `plans/<project-name>.md` before starting. Any project-specific concerns listed there take priority.
+- Read `projects/<project-name>/docs/project-brief.md` if it exists — flag anything in the PR that appears to work against the project's stated goal or user need.
 - Check for bugs, logic errors, and edge cases.
 - Check for security vulnerabilities (injection, auth issues, data exposure, OWASP top 10).
 - Assess code clarity and maintainability.
 - Produce a structured report: PASS / FAIL / CONDITIONAL, with specific line-level findings.
+- Post the verdict to the GitHub PR using `gh pr review`:
+  - `--approve` for PASS
+  - `--comment` for CONDITIONAL (majors but no blockers)
+  - `--request-changes` for FAIL (one or more blockers)
+
+**Does NOT:** Merge the PR. Approval confirms code quality only — the user decides when to merge after both the Review Agent and Tech Lead (alignment review) have posted their verdicts.
 
 **Works alongside:** Tech Lead Agent (alignment review mode), spawned by the main conversation after this agent completes.
 
-**Handoff:** Review report presented to main conversation. Main conversation then spawns Tech Lead (alignment review mode) and presents both reports to the user together.
+**Handoff:** Review report presented in conversation and posted to GitHub PR. Main conversation then spawns Tech Lead (alignment review mode) and presents both reports to the user together.
 
 ---
 
 ## Tech Lead Agent (as reviewer of executor output)
 
-**Purpose:** Verify that executor output aligns with the approved tech plan and system design.
+**Purpose:** Verify that executor output aligns with the approved tech plan and system design. This is the Tech Lead in **alignment review mode** — see the Tech Lead Agent entry above for all four activation modes.
 
 **Responsibilities:**
 - Read the Tech Lead Plan and Review Checklist sections of `plans/<project-name>.md` before starting.
@@ -323,7 +338,12 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Verify that technology choices made during planning are respected.
 - Flag any drift from the agreed design.
 - Produce a structured alignment report: ALIGNED / DRIFT DETECTED, with specific findings.
+- Post the verdict to the GitHub PR using `gh pr review`:
+  - `--approve` for ALIGNED
+  - `--request-changes` for DRIFT DETECTED
+
+**Does NOT:** Merge the PR. Approval confirms architectural alignment only — the user decides when to merge after both the Review Agent and Tech Lead (alignment review) have posted their verdicts.
 
 **Works alongside:** Review Agent (parallel review pass on the same executor output).
 
-**Handoff:** Alignment report combined with Review report, presented to user.
+**Handoff:** Alignment report presented in conversation and posted to GitHub PR. Both reports are visible on the PR for full traceability.

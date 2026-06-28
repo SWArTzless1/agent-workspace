@@ -23,7 +23,7 @@ When the plan is complete and the user has signed off, the Triage Agent spawns t
 | Executor-Python | Read + Write (Python solution section only) |
 | Executor-React | Read + Write (React solution section only) |
 | Executor-Godot | Read + Write (Godot solution section only) |
-| Plan Review Agent | **Read only** — never edits |
+| Triage Reviewer | **Read only** — never edits |
 | Triage Reviewer | **Read only** — never edits |
 | Tech Lead Reviewer | **Read only** — never edits |
 | Design Reviewer | **Read only** — never edits |
@@ -79,7 +79,7 @@ When a new project or feature prompt comes in, the Triage Agent will:
 6. Flag any section it cannot fill without more input, and ask explicitly.
 7. Never move on from a section the user has not confirmed.
 
-You can interrupt at any point to revise a previous section. The plan is a living document until the Plan Review Agent signs it off.
+You can interrupt at any point to revise a previous section. The plan is a living document until the Triage Reviewer signs it off.
 
 ---
 
@@ -413,7 +413,7 @@ Specific things the Review Agent and Tech Lead Agent must check beyond their def
 <!-- WRITTEN BY: Triage Agent — only include this section if the Plan Review cycle produced contested gaps -->
 <!-- Reviewer agents never write here -->
 
-*Include only if the Triage Agent rejected or contested one or more gaps raised by the Plan Review Agent.*
+*Include only if the Triage Agent rejected or contested one or more gaps raised by the Triage Reviewer.*
 
 | Gap | Triage Position | User Resolution |
 |---|---|---|

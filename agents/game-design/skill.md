@@ -121,6 +121,8 @@ Do **not** read the Tech Lead Plan solution section, any Tech Lead Notes, or any
 
 Also read `shared/conventions.md` for any existing game design conventions or system patterns used in this project.
 
+Also read `projects/<project-name>/docs/project-brief.md` if it exists — this is the project's north star, describing the high-level goal and the player experience the project aims to create. Use it to ground your mechanics and systems in the intended player feeling, not just the plan section. If any game design decision or instruction appears to directly contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
+
 **Step 2 — Comprehension test.**
 
 After reading, answer the following questions. If you cannot answer any of them, re-read the relevant section. Once you can answer all of them, output the COMPREHENSION SUMMARY — this must appear before any design work begins.
@@ -575,6 +577,7 @@ Written to `projects/<project-name>/docs/game-design.md` (or `plans/<project-nam
 ```
 
 ### SPAWN REQUEST
+Model: haiku
 (Follow the standard Spawn Request protocol from CLAUDE.md exactly.)
 
 ---

@@ -75,7 +75,7 @@ Read these files in order before doing anything else:
 
 1. `shared/conventions.md`
 2. `plans/<project-name>.md` — the full plan file
-3. `projects/<project-name>/docs/` — any existing documentation
+3. `projects/<project-name>/docs/` — any existing documentation, including `project-brief.md` if present: this is the project's north star and high-level goal. Use it to understand what the service is ultimately serving. If any instruction or plan section appears to contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
 
 From the plan file, read and understand:
 
@@ -588,6 +588,7 @@ Ready to open PR: YES / NO
 ```
 
 ### SPAWN REQUEST (Review Agent)
+Model: sonnet
 (Follow the standard Spawn Request protocol from `CLAUDE.md` exactly, including the Review Agent prompt with the full context listed in Phase 6.)
 
 ---

@@ -181,6 +181,7 @@ Read the following from `plans/<project-name>.md`:
 - `### Tech Lead Feasibility Assessment` — any infeasibility decisions affecting your scope
 
 Also read:
+- `projects/<project-name>/docs/project-brief.md` — if it exists: the project's north star and high-level goal. Use it to understand the intended player experience and what the project is ultimately trying to achieve. If any instruction or plan section appears to contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
 - `projects/<project-name>/docs/design-system.md` — colour tokens, typography, button styles (required for all UI work; if absent when UI is in scope, raise a USER CHECKPOINT)
 - `projects/<project-name>/docs/game-design.md` — the full Game Design Document (context for the Game Design Notes)
 - `shared/conventions.md` — GDScript formatting and documentation requirements
@@ -686,6 +687,7 @@ Ready to open PR: YES / NO
 ```
 
 ### SPAWN REQUEST (Review Agent)
+Model: sonnet
 (Follow the standard Spawn Request protocol from `CLAUDE.md` exactly, including the Review Agent prompt with the full context listed in Phase 6.)
 
 ---

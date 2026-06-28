@@ -228,6 +228,7 @@ Read the following from `plans/<project-name>.md`:
 - `### Tech Lead Feasibility Assessment` — any infeasibility decisions that affect your scope (if present)
 
 Also read:
+- `projects/<project-name>/docs/project-brief.md` — if it exists: the project's north star and high-level goal. Use it to understand what the product is trying to achieve and for whom. If any instruction or plan section appears to contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
 - `projects/<project-name>/docs/design-system.md` — colour tokens, typography, button variants, spacing (required for all styling decisions)
 - `shared/conventions.md` — CSS approach, naming conventions, project-specific rules
 
@@ -693,6 +694,7 @@ Ready to open PR: YES / NO
 ```
 
 ### SPAWN REQUEST (Review Agent)
+Model: sonnet
 (Follow the standard Spawn Request protocol from CLAUDE.md exactly, including the Review Agent prompt with the full context listed in Phase 6.)
 
 ---

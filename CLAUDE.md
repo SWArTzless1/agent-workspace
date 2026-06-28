@@ -61,6 +61,30 @@ echo "projects/<name>/" >> .gitignore
 
 The workspace git repository (`agent-workspace/`) tracks workspace config only — agents, plans, shared files, and `CLAUDE.md`. It does not track project code. All executor branches, commits, and pull requests belong to the project's own repository at `projects/<name>/`.
 
+**GitHub remote (strongly recommended):** Executors will push task branches and open pull requests — both require a GitHub remote. Ask the user:
+
+```
+Would you like to create a GitHub remote for this project now?
+  A) Yes — create it automatically using the GitHub CLI (gh must be installed and authenticated)
+  B) Yes — I'll create it manually on GitHub and provide the URL
+  C) Skip for now — I'll add the remote later
+```
+
+If A: run the following from the project folder:
+```bash
+cd projects/<name>/
+gh repo create <name> --private --source=. --remote=origin
+```
+This creates a private repository under the authenticated GitHub account and sets `origin` automatically. Confirm the remote was added: `git remote -v`.
+
+If B: wait for the user to provide the URL, then:
+```bash
+cd projects/<name>/
+git remote add origin <url>
+```
+
+If C: note that `git push` will fail until a remote is added. Executors will surface this as a USER CHECKPOINT at Phase 5 if no remote is configured.
+
 Stage the `.gitignore` update now (`git add .gitignore`) — it will be committed alongside the workspace bookkeeping in Step 4.
 
 **Step 3 — Write the project brief**
@@ -331,6 +355,112 @@ Ready to proceed? (yes / stop here)
 - **"run one at a time"** (parallel checkpoint only) — the main conversation presents agents sequentially instead.
 - **"stop here"** — the workflow pauses. The plan file remains in a valid intermediate state. When the user returns, the main conversation reads the audit trail, reconstructs the current phase, and presents a new Phase Checkpoint.
 
+### Status Note
+
+After every Phase Checkpoint and every agent spawn announcement, include a single compact status line immediately below the checkpoint block. This lets the user see the overall state of the workspace at a glance without reading the full checkpoint:
+
+```
+Status: [what is running / what just completed] → [what is next] · [action needed: yes — <what> / no]
+```
+
+Examples:
+- `Status: Triage complete — Tech Lead + Design running in parallel → Feasibility review next · No action needed now.`
+- `Status: Executor-React MVP + Executor-Dotnet MVP running → Completion passes next · No action needed now.`
+- `Status: All agents idle → Awaiting your direction · Action needed: confirm merge or request changes.`
+- `Status: Tech Lead alignment review running → Merge decision next · No action needed now.`
+
+One line only. Never re-explain the checkpoint — just signal overall state. If the user is on a big screen with the workspace launcher open, this line is what they read from the right pane.
+
+### Agent Monitor Protocol
+
+When the user is running a **single-pane** Windows Terminal session (no pre-existing splits), the main conversation opens live monitoring panes automatically as agents are spawned. Each pane watches a status file that the main conversation keeps updated.
+
+**Prerequisite:** This protocol assumes the user started with a single maximised terminal pane running Claude Code.
+
+**Step 1 — Write a status file before spawning each agent.**
+
+Immediately before each Agent tool call, write `agents/runtime/<slug>.md` via the Bash tool:
+
+```bash
+cat > agents/runtime/tech-lead.md << 'EOF'
+AGENT:   Tech Lead
+MODE:    planning
+PROJECT: <project-name>
+STARTED: <HH:MM:SS>
+
+STATUS:  ● RUNNING
+────────────────────────────────────────
+Spawned. Awaiting result...
+EOF
+```
+
+Agent slug reference:
+
+| Agent | Slug |
+|---|---|
+| Tech Lead (any mode) | `tech-lead` |
+| Design Agent (any mode) | `design` |
+| Game Design Agent (any mode) | `game-design` |
+| Executor-React | `executor-react` |
+| Executor-Dotnet | `executor-dotnet` |
+| Executor-Python | `executor-python` |
+| Executor-Database | `executor-database` |
+| Executor-Godot | `executor-godot` |
+
+**Step 2 — Open monitor panes (one `wt` command covers all agents in a spawn).**
+
+Run this via the Bash tool immediately after writing the status file(s) and before the Agent tool call(s). The `;` tokens are wt command separators, quoted so Bash passes them literally.
+
+*1 agent:*
+```bash
+wt split-pane -V --size 0.5 --title "<AgentName>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug>'" ";" move-focus left
+```
+
+*2 agents in parallel:*
+```bash
+wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.5 --title "<Agent2>" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
+```
+
+*3 agents in parallel:*
+```bash
+wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.333 --title "<Agent3>" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug3>'" ";" move-focus up ";" split-pane -H --size 0.5 --title "<Agent2>" -- pwsh -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
+```
+
+The `move-focus left` at the end returns keyboard focus to the main chat pane automatically.
+
+**Step 3 — Update the status file when the agent returns.**
+
+After receiving the agent's result, overwrite the status file:
+
+```bash
+cat > agents/runtime/<slug>.md << 'EOF'
+AGENT:   <AgentName>
+MODE:    <mode>
+PROJECT: <project-name>
+STARTED: <HH:MM:SS>
+DONE:    <HH:MM:SS>
+
+STATUS:  ✓ COMPLETE
+────────────────────────────────────────
+<One sentence summary of outcome>
+Next: <next phase>
+EOF
+```
+
+If the agent was blocked or errored, use `✗ BLOCKED` as the status and explain what needs user attention.
+
+**Step 4 — Clean up at session end.**
+
+When the user says "stop here" at any Phase Checkpoint, or when the full workflow completes and the merge decision is handed to the user, delete the runtime status files:
+
+```bash
+rm -f agents/runtime/*.md
+```
+
+Do not delete `agents/runtime/.gitkeep`.
+
+---
+
 ### Reviewer Verdict Persistence
 
 Reviewer verdicts appear in conversation only — they are never written to the plan file. To ensure phase state survives session reset, the main conversation appends a row to the Audit Trail **immediately after detecting a reviewer approval in conversation**:
@@ -371,6 +501,41 @@ Do not assume any phase is complete if its Phase Cleared row is absent from the 
 | Executor-X | Review Agent only |
 
 No agent may spawn a collaborative agent. If an agent's skill file says "control returns to Triage Agent to spawn the next agent" — that instruction is superseded by this protocol. Control returns to the main conversation.
+
+### Model Assignments
+
+Use these model assignments when calling the Agent tool. Pass `model:` exactly as listed — do not upgrade or downgrade without a deliberate decision.
+
+**Collaborative agents (spawned by the main conversation):**
+
+| Agent | Mode | Model |
+|---|---|---|
+| Triage | planning | `sonnet` |
+| Tech Lead | planning | `opus` |
+| Tech Lead | feasibility | `opus` |
+| Tech Lead | alignment review | `sonnet` |
+| Tech Lead | brief-review | `sonnet` |
+| Design Agent | planning | `sonnet` |
+| Design Agent | design-notes-only | `haiku` |
+| Design Agent | brief-review | `haiku` |
+| Game Design Agent | planning | `sonnet` |
+| Game Design Agent | notes-only | `haiku` |
+| Game Design Agent | brief-review | `haiku` |
+| Executor-React | mvp + completion | `sonnet` |
+| Executor-Dotnet | mvp + completion | `sonnet` |
+| Executor-Python | mvp + completion | `sonnet` |
+| Executor-Database | mvp + completion | `sonnet` |
+| Executor-Godot | mvp + completion | `sonnet` |
+
+**Sub-agents (model specified in the spawning agent's skill file):**
+
+| Agent | Model |
+|---|---|
+| Triage Reviewer | `sonnet` |
+| Tech Lead Reviewer | `sonnet` |
+| Design Reviewer | `haiku` |
+| Game Design Reviewer | `haiku` |
+| Review Agent | `sonnet` |
 
 ### Feasibility Review Trigger
 
@@ -579,6 +744,7 @@ Used by agents to spawn their designated reviewer (sub-agent). The spawning agen
 SPAWN REQUEST
 ═══════════════════════════════════════════════════
 Agent to spawn: <Reviewer name>
+Model: <see Model Assignments table>
 
 <Reviewer name>
 Prompt: "<exact prompt that will be sent>"
