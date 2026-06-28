@@ -1,4 +1,4 @@
-# Executor-Dotnet Agent — Skill File
+﻿# Executor-Dotnet Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -243,7 +243,7 @@ Then stop until the user clarifies.
 
 ## Phase 1 — Read the plan and survey the codebase
 
-Read the following from `plans/<project-name>.md`:
+Read the following from `projects/<project-name>/plans/<plan-name>.md`:
 - The **Overview** — what user problem this feature solves
 - **Triage Notes** — scope, platform, non-goals, constraints
 - `### Tech Lead Notes (Executor-Dotnet)` — your implementation brief: endpoint contracts, service interfaces, data models, auth requirements, error code mapping, dependencies
@@ -635,7 +635,7 @@ gh pr create \
 
 ## Plan reference
 
-- Plan file: `plans/<project-name>.md`
+- Plan file: `projects/<project-name>/plans/<plan-name>.md`
 - Tech Lead Notes section: `### Tech Lead Notes (Executor-Dotnet)`
 
 ## Test plan
@@ -654,7 +654,7 @@ EOF
 
 Do not merge. The PR waits for the Review Agent and Tech Lead (alignment review mode).
 
-Append a row to the Audit Trail in `plans/<project-name>.md`:
+Append a row to the Audit Trail in `projects/<project-name>/plans/<plan-name>.md`:
 
 ```
 | <#> | <YYYY-MM-DD> | Executor-Dotnet | MVP/Completion pass complete | PR opened: [PR URL]. Branch: [branch]. All acceptance criteria verified. |
@@ -668,7 +668,7 @@ After the PR is open, spawn the Review Agent using the Sub-Agent Spawn Request p
 
 The Spawn Request prompt to the Review Agent must include:
 1. The PR URL
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The specific section to check against: `### Tech Lead Notes (Executor-Dotnet)`
 4. The mode: `mvp` or `completion`
 5. The branch name and any notable implementation decisions made during the pass (e.g., how DB constraint errors were mapped, any deviations from the plan)

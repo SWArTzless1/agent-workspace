@@ -1,4 +1,4 @@
-# Triage Reviewer Agent — Skill File
+﻿# Triage Reviewer Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -30,7 +30,7 @@ You have zero tolerance for ambiguity — in routing decisions and in plan conte
 
 You are spawned by the Triage Agent after Phase 3 (routing) is complete and the plan has been approved by the user. The Triage Agent's Spawn Request must pass all three of the following inputs:
 1. The original user prompt
-2. The fully approved plan file reference (`plans/<project-name>.md`)
+2. The fully approved plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The routing announcement (agent sequence, confidence rating, scope estimate)
 
 **Spawner identity is inferred from inputs.** If all three required inputs are present and formatted as expected, treat this as confirmation you were spawned correctly by the Triage Agent. If any are absent or malformed, do not attempt a review — issue the wrong-spawner checkpoint immediately and end your session:
@@ -96,7 +96,7 @@ If they are consistent, proceed to Step 3.
 
 ### Step 3 — Review the plan file
 
-Read the fully approved plan file at `plans/<project-name>.md`.
+Read the fully approved plan file at `projects/<project-name>/plans/<plan-name>.md`.
 
 Also read the Agent Roster in `CLAUDE.md` before evaluating any agent sequence. Do not evaluate agent inclusion or validity from memory — use only the workspace file.
 

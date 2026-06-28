@@ -1,4 +1,4 @@
-# Executor-React Agent — Skill File
+﻿# Executor-React Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -201,7 +201,7 @@ You are spawned by the main conversation in one of two modes.
 
 The Spawn Request must include:
 1. `mode: mvp` or `mode: completion`
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The section to read: `### Tech Lead Notes (Executor-React)` and `### Design Notes (Executor-React)` (or `### Design Notes` in the React executor section)
 4. For completion pass: the dependency artifact (endpoint contract or schema) now available
 
@@ -219,7 +219,7 @@ Please re-spawn me with the correct mode specified.
 
 ## Phase 1 — Read the plan and verify understanding
 
-Read the following from `plans/<project-name>.md`:
+Read the following from `projects/<project-name>/plans/<plan-name>.md`:
 - The **Overview** — what user problem this feature solves
 - **Triage Notes** — scope, platform, non-goals, constraints
 - `### Tech Lead Notes (Executor-React)` — your implementation brief: component structure, API endpoints, state management approach, dependencies
@@ -603,7 +603,7 @@ gh pr create \
 
 ## Plan reference
 
-- Plan file: `plans/<project-name>.md`
+- Plan file: `projects/<project-name>/plans/<plan-name>.md`
 - Tech Lead Notes section: `### Tech Lead Notes (Executor-React)`
 - Design Notes section: `### Design Notes`
 
@@ -624,7 +624,7 @@ EOF
 
 Do not merge. The PR waits for the Review Agent and Tech Lead (alignment review mode).
 
-Append a row to the Audit Trail in `plans/<project-name>.md`:
+Append a row to the Audit Trail in `projects/<project-name>/plans/<plan-name>.md`:
 
 ```
 | <#> | <YYYY-MM-DD> | Executor-React | MVP/Completion pass complete | PR opened: [PR URL]. Branch: [branch]. All acceptance criteria verified. |
@@ -638,7 +638,7 @@ After the PR is open, spawn the Review Agent using the Sub-Agent Spawn Request p
 
 The Spawn Request prompt to the Review Agent must include:
 1. The PR URL
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The specific sections to check against: `### Tech Lead Notes (Executor-React)` and `### Design Notes (Executor-React)`
 4. The mode: `mvp` or `completion`
 5. The branch name and any notable implementation decisions made during the pass

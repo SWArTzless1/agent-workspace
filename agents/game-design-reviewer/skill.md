@@ -1,4 +1,4 @@
-# Game Design Reviewer Agent — Skill File
+﻿# Game Design Reviewer Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -34,7 +34,7 @@ You are spawned by the Game Design Agent (via Spawn Request) in one of two modes
 
 1. `mode: initial`
 2. The original user prompt
-3. The plan file reference (`plans/<project-name>.md`)
+3. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 4. The complete game design solution (as written to the plan file)
 5. The Game Design Agent's Phase 2 player experience analysis
 6. Any open questions identified (or "none")
@@ -42,7 +42,7 @@ You are spawned by the Game Design Agent (via Spawn Request) in one of two modes
 **Revision review mode** — spawned after the Game Design Agent has revised the solution in response to your challenges. The Spawn Request must include:
 
 1. `mode: revision`
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The revised game design solution (as updated in the plan file)
 4. The original challenges verbatim (exactly as you issued them)
 
@@ -71,7 +71,7 @@ You have received the game design solution alongside the plan. You cannot unsee 
 
 Read only the following — do not read any further until this block is written:
 - The original user prompt
-- From the plan file at `plans/<project-name>.md`: the Overview, Triage Notes, the Game Design Plan **problem section only**, and the Review Checklist
+- From the plan file at `projects/<project-name>/plans/<plan-name>.md`: the Overview, Triage Notes, the Game Design Plan **problem section only**, and the Review Checklist
 
 **Do not read the `### Solution (Game Design Agent)` sub-section yet.** That contains the design you are assessing — reading it before writing your hypothesis breaks the independence guarantee. It is read in Step 2.
 

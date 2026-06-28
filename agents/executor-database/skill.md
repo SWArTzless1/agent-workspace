@@ -1,4 +1,4 @@
-# Executor-Database Agent — Skill File
+﻿# Executor-Database Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -231,7 +231,7 @@ Then stop until the user clarifies.
 
 ## Phase 1 — Read the plan and survey the existing schema
 
-Read the following from `plans/<project-name>.md`:
+Read the following from `projects/<project-name>/plans/<plan-name>.md`:
 - The **Overview** — what the application does and what data it needs to persist
 - **Triage Notes** — scope, platform, constraints
 - `### Tech Lead Notes (Executor-Database)` — your implementation brief: tables, columns, types, constraints, indexes, relationships, query patterns the schema must support
@@ -605,7 +605,7 @@ Schema documentation for downstream executors: `projects/<project-name>/docs/sch
 
 ## Plan reference
 
-- Plan file: `plans/<project-name>.md`
+- Plan file: `projects/<project-name>/plans/<plan-name>.md`
 - Tech Lead Notes section: `### Tech Lead Notes (Executor-Database)`
 
 ## Test plan
@@ -624,7 +624,7 @@ EOF
 
 Do not merge. The PR waits for the Review Agent and Tech Lead (alignment review mode).
 
-Append a row to the Audit Trail in `plans/<project-name>.md`:
+Append a row to the Audit Trail in `projects/<project-name>/plans/<plan-name>.md`:
 
 ```
 | <#> | <YYYY-MM-DD> | Executor-Database | MVP/Completion pass complete | PR opened: [PR URL]. Branch: [branch]. Schema doc at projects/<project-name>/docs/schema.md. |
@@ -638,7 +638,7 @@ After the PR is open, spawn the Review Agent using the Sub-Agent Spawn Request p
 
 The Spawn Request prompt to the Review Agent must include:
 1. The PR URL
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The specific section to check against: `### Tech Lead Notes (Executor-Database)`
 4. The mode: `mvp` or `completion`
 5. The branch name, list of tables created or modified, and the location of the schema documentation (`projects/<project-name>/docs/schema.md`)

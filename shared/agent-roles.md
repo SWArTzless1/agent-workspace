@@ -1,4 +1,4 @@
-# Agent Role Definitions
+﻿# Agent Role Definitions
 
 All agents must read this file before acting. Role definitions govern behaviour, responsibilities, and handoff rules.
 
@@ -15,7 +15,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Responsibilities:**
 
 **Phase 1 — Plan creation (always first):**
-- Identify which project is being worked on (check `projects/`). If it is a new project, create the project folder and a new plan file at `plans/<project-name>.md`.
+- Identify which project is being worked on (check `projects/`). If it is a new project, create the project folder and a new plan file at `projects/<project-name>/plans/<plan-name>.md`.
 - Open the existing plan file if one exists, or start a new one using the structure in `plans/README.md`.
 - Walk through each relevant section of the plan file with the user, one section at a time. Ask specific questions to extract the information each downstream agent will need.
 - Write the user's answers into the plan file in structured form.
@@ -187,7 +187,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Implement features and fixes for React/web projects.
 
 **Responsibilities:**
-- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Read the Executor Plan section of `projects/<project-name>/plans/<plan-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
 - Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Implement according to the approved tech plan and design.
 - Follow conventions in `shared/conventions.md`.
@@ -209,7 +209,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Tech stack:** Python 3.12+ · FastAPI (default) or Flask/Django as project specifies · Pydantic for data models · SQLAlchemy or project ORM · pytest for testing
 
 **Responsibilities:**
-- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Read the Executor Plan section of `projects/<project-name>/plans/<plan-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
 - Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Implement API endpoints, services, and business logic according to the approved tech plan.
 - Write Pydantic models for request/response validation. Never accept or return unvalidated data.
@@ -234,7 +234,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Implement features and fixes for Godot projects.
 
 **Responsibilities:**
-- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Read the Executor Plan section of `projects/<project-name>/plans/<plan-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
 - Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Implement according to the approved tech plan.
 - Follow Godot-specific conventions in `shared/conventions.md`.
@@ -256,7 +256,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Tech stack:** C# · ASP.NET Core · Entity Framework Core · PostgreSQL
 
 **Responsibilities:**
-- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Read the Executor Plan section of `projects/<project-name>/plans/<plan-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
 - Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Implement REST API controllers, services, and middleware according to the approved tech plan.
 - Define EF Core entity models and DbContext; write and apply migrations.
@@ -281,7 +281,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Tech stack:** PostgreSQL (primary) · SQLite (Godot local) · EF Core migrations (.NET) · Supabase (Godot online)
 
 **Responsibilities:**
-- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Read the Executor Plan section of `projects/<project-name>/plans/<plan-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
 - Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
 - Design normalised schemas with appropriate indexes, constraints, and foreign keys.
 - Write migrations that are safe to run forward and can be rolled back without data loss.
@@ -309,7 +309,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Plan file access: READ ONLY.** This agent reads the Review Checklist section of the plan file but must never write to or modify it.
 
 **Responsibilities:**
-- Read the Review Checklist section of `plans/<project-name>.md` before starting. Any project-specific concerns listed there take priority.
+- Read the Review Checklist section of `projects/<project-name>/plans/<plan-name>.md` before starting. Any project-specific concerns listed there take priority.
 - Read `projects/<project-name>/docs/project-brief.md` if it exists — flag anything in the PR that appears to work against the project's stated goal or user need.
 - Check for bugs, logic errors, and edge cases.
 - Check for security vulnerabilities (injection, auth issues, data exposure, OWASP top 10).
@@ -333,7 +333,7 @@ All agents must read this file before acting. Role definitions govern behaviour,
 **Purpose:** Verify that executor output aligns with the approved tech plan and system design. This is the Tech Lead in **alignment review mode** — see the Tech Lead Agent entry above for all four activation modes.
 
 **Responsibilities:**
-- Read the Tech Lead Plan and Review Checklist sections of `plans/<project-name>.md` before starting.
+- Read the Tech Lead Plan and Review Checklist sections of `projects/<project-name>/plans/<plan-name>.md` before starting.
 - Check that the implementation follows the chosen architecture and patterns.
 - Verify that technology choices made during planning are respected.
 - Flag any drift from the agreed design.

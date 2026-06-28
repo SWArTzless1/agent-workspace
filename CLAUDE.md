@@ -1,4 +1,4 @@
-# Agent Workspace
+﻿# Agent Workspace
 
 This is a multi-agent development workspace. Every prompt must be triaged before any work begins. Read this file fully before acting on any prompt.
 
@@ -641,7 +641,7 @@ Do not spawn until the user replies with approval.
 agent-workspace/
   agents/<name>/skill.md   — one folder per agent (see Agent Roster)
   agents/runtime/          — live status files written during agent sessions
-  plans/<project>.md       — one plan file per project
+  projects/<project>/plans/ — plan files (one per feature/task, inside each project)
   projects/<project>/      — project repos (excluded from workspace git)
   shared/                  — agent-roles.md, conventions.md, glossary.md
   CLAUDE.md

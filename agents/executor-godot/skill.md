@@ -1,4 +1,4 @@
-# Executor-Godot Agent — Skill File
+﻿# Executor-Godot Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -171,7 +171,7 @@ Then stop until the user clarifies.
 
 ## Phase 1 — Read the plan and survey the project
 
-Read the following from `plans/<project-name>.md`:
+Read the following from `projects/<project-name>/plans/<plan-name>.md`:
 - The **Overview** — what the feature or system is and what player problem it solves
 - **Triage Notes** — scope, platform, non-goals, constraints
 - `### Tech Lead Notes (Executor-Godot)` — architecture: scene structure, node hierarchy, signal contracts, data layer approach, dependencies
@@ -589,7 +589,7 @@ gh pr create \
 
 ## Plan reference
 
-- Plan file: `plans/<project-name>.md`
+- Plan file: `projects/<project-name>/plans/<plan-name>.md`
 - Tech Lead Notes section: `### Tech Lead Notes (Executor-Godot)`
 - Game Design Notes section: `### Game Design Notes`
 - Design Notes section: `### Design Notes` (if applicable)
@@ -610,7 +610,7 @@ EOF
 
 Do not merge. The PR waits for the Review Agent and Tech Lead (alignment review mode).
 
-Append a row to the Audit Trail in `plans/<project-name>.md`:
+Append a row to the Audit Trail in `projects/<project-name>/plans/<plan-name>.md`:
 
 ```
 | <#> | <YYYY-MM-DD> | Executor-Godot | MVP/Completion pass complete | PR opened: [PR URL]. Branch: [branch]. All acceptance criteria verified in playtest. |
@@ -624,7 +624,7 @@ After the PR is open, spawn the Review Agent using the Sub-Agent Spawn Request p
 
 The Spawn Request prompt must include:
 1. The PR URL
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The sections to check against: `### Tech Lead Notes (Executor-Godot)`, `### Game Design Notes`, and `### Design Notes` (if UI was in scope)
 4. The mode: `mvp` or `completion`
 5. The branch name, list of scenes and systems implemented, and playtest instructions (how to reproduce the feature in the Godot editor)

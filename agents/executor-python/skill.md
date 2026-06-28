@@ -1,4 +1,4 @@
-# Executor-Python Agent — Skill File
+﻿# Executor-Python Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -74,7 +74,7 @@ Use Google-style PEP 257 docstrings on all public modules, classes, and function
 Read these files in order before doing anything else:
 
 1. `shared/conventions.md`
-2. `plans/<project-name>.md` — the full plan file
+2. `projects/<project-name>/plans/<plan-name>.md` — the full plan file
 3. `projects/<project-name>/docs/` — any existing documentation, including `project-brief.md` if present: this is the project's north star and high-level goal. Use it to understand what the service is ultimately serving. If any instruction or plan section appears to contradict the brief, raise a BRIEF CONFLICT DETECTED USER CHECKPOINT (Core Rule 5 in CLAUDE.md).
 
 From the plan file, read and understand:
@@ -491,7 +491,7 @@ gh pr create \
 
 ## Plan reference
 
-- Plan file: `plans/<project-name>.md`
+- Plan file: `projects/<project-name>/plans/<plan-name>.md`
 - Tech Lead Notes section: `### Tech Lead Notes` (within `## Executor Plan — Python`)
 - Design Notes section: `### Design Notes` (if applicable)
 
@@ -528,7 +528,7 @@ After the PR is open, spawn the Review Agent using the Sub-Agent Spawn Request p
 
 The Spawn Request prompt must include:
 1. The PR URL
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The sections to check against: `### Tech Lead Notes (Executor-Python)` and `### Design Notes` (if applicable)
 4. The mode: `mvp` or `completion`
 5. The branch name, list of endpoints and services implemented, and how to run the test suite

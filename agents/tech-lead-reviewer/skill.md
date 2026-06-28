@@ -1,4 +1,4 @@
-# Tech Lead Reviewer Agent — Skill File
+﻿# Tech Lead Reviewer Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -34,7 +34,7 @@ You are spawned by the Tech Lead Agent (via Spawn Request) in one of two modes.
 
 1. `mode: initial`
 2. The original user prompt
-3. The plan file reference (`plans/<project-name>.md`)
+3. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 4. The complete technical solution (as written to the plan file)
 5. The Tech Lead's Phase 2 problem analysis
 6. Any open questions the Tech Lead identified
@@ -42,7 +42,7 @@ You are spawned by the Tech Lead Agent (via Spawn Request) in one of two modes.
 **Revision review mode** — spawned after the Tech Lead has revised the solution in response to your challenges. The Spawn Request must include:
 
 1. `mode: revision`
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The revised technical solution (as updated in the plan file)
 4. The original challenges verbatim (exactly as you issued them)
 
@@ -71,7 +71,7 @@ You have received the technical solution alongside the plan. You cannot unsee it
 
 Read only the following — do not read any further until this block is written:
 - The original user prompt
-- From the plan file at `plans/<project-name>.md`: the Overview, Triage Notes, all `### Problem (Triage)` sub-sections, and the Review Checklist
+- From the plan file at `projects/<project-name>/plans/<plan-name>.md`: the Overview, Triage Notes, all `### Problem (Triage)` sub-sections, and the Review Checklist
 
 **Do not read the `### Solution (Tech Lead)` sub-section or any `### Tech Lead Notes` sub-sections yet.** Those contain the solution you are assessing — reading them before writing your independent assessment breaks the independence guarantee. They are read in Step 2.
 

@@ -1,4 +1,4 @@
-# Triage Agent — Skill File
+﻿# Triage Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -53,7 +53,7 @@ Before opening a plan file or routing anything, read the prompt carefully and as
 
 **Plan file naming:** If this is a new plan (no existing plan file for this project), agree a filename with the user before creating anything:
 
-> "What would you like to call this plan? It will be saved as `plans/<your-name>.md`. I'd suggest `plans/<suggested-slug>.md` based on your prompt — does that work, or would you prefer something else?"
+> "What would you like to call this plan? It will be saved as `projects/<project-name>/plans/<plan-name>.md`. I'd suggest `<suggested-slug>` as the plan name based on your prompt — does that work, or would you prefer something else?"
 
 The name should be short, descriptive, and kebab-cased. Once agreed, create the file. The filename does not change even if the scope evolves. If a plan file already exists, open it — do not create a new one.
 
@@ -70,9 +70,9 @@ The name should be short, descriptive, and kebab-cased. Once agreed, create the 
 
 ### Phase 2 — Plan creation (with the user)
 
-Open or create the plan file for this project at `plans/<project-name>.md`.
+Open or create the plan file for this project at `projects/<project-name>/plans/<plan-name>.md`.
 
-Use the structure defined in `plans/README.md`. Walk through each relevant section with the user:
+Use the structure defined in `plans/README.md` (the workspace-level template). Walk through each relevant section with the user:
 
 1. Tell the user which sections of the plan apply to this prompt.
 2. For each section, identify the questions needed to fill it in.
@@ -171,7 +171,7 @@ Scope: <Small / Medium / Large> — <basis>
 
 Issue a **SPAWN REQUEST** for the Triage Reviewer. This is the only sub-agent Triage may spawn. The Spawn Request must explicitly pass all three of the following:
 1. The original user prompt (verbatim)
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The routing announcement (agent sequence, confidence rating, scope estimate)
 
 ---
@@ -305,7 +305,7 @@ Hard stops. If you find yourself about to do any of the following, stop immediat
 - **Never treat an agent's output as a USER CHECKPOINT response.** Only the actual user can clear a checkpoint.
 - **Never proceed past a USER CHECKPOINT based on an implied or ambiguous response.** If the reply does not clearly approve, ask again.
 - **Never open, modify, or create files outside the `agent-workspace/` directory.**
-- **Never create plan files outside `plans/`.** One plan file per project, in that folder.
+- **Never create plan files outside `projects/<project-name>/plans/`.** One plan file per project, in that folder.
 
 ---
 
@@ -330,7 +330,7 @@ Do not guess. Ask: "Is this for the React frontend, the .NET backend, the databa
 Answer it directly from workspace files without entering the planning phase.
 
 **The project folder does not exist yet.**
-Confirm the project name with the user. Create `projects/<name>/` and `plans/<name>.md` only after confirmation.
+Confirm the project name with the user. Create `projects/<name>/` and `projects/<name>/plans/<plan-name>.md` only after confirmation.
 
 **Multiple project folders could match the prompt.**
 List the candidates and ask the user to confirm which one before doing anything.

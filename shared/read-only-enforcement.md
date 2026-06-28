@@ -1,4 +1,4 @@
-# Read-Only Plan File Enforcement — Implementation Reference
+﻿# Read-Only Plan File Enforcement — Implementation Reference
 
 This document describes how to technically enforce the read-only constraint on plan files for reviewer agents. Currently, the constraint is implemented through skill file instructions only, which are not enforceable at the runtime level. This document is a reference for implementing proper technical enforcement when the workspace matures.
 
@@ -115,12 +115,12 @@ server.tool("write_plan_file", async ({ projectName, section, content, agentRole
   if (!ACTIVE_ROLES.has(agentRole)) {
     throw new Error(`Unknown agent role '${agentRole}'.`);
   }
-  // Write to plans/<projectName>.md — section-scoped write logic here
+  // Write to projects/<projectName>/plans/<planName>.md — section-scoped write logic here
   // Also validates the agent is writing only to their designated section
 });
 
 server.tool("read_plan_file", async ({ projectName }) => {
-  // Read and return plans/<projectName>.md content — available to all agents
+  // Read and return projects/<projectName>/plans/<planName>.md content — available to all agents
 });
 ```
 

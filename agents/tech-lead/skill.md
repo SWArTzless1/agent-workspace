@@ -1,4 +1,4 @@
-# Tech Lead Agent — Skill File
+﻿# Tech Lead Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -34,17 +34,17 @@ The activation context is established when you are spawned. Read it carefully at
 
 **Planning mode:** You are spawned by the main conversation after the Triage Reviewer has approved the routing. The Spawn Request must include:
 1. The original user prompt
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The routing announcement (agent sequence, confidence rating, scope estimate)
 
 **Feasibility mode:** You are spawned by the main conversation after both the Tech Lead plan and the Design plan (and Game Design plan, for Godot projects) have been independently approved. The Spawn Request must include:
 1. `mode: feasibility`
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The sections to read: Tech Lead solution + Design solution (+ Game Design solution if applicable)
 
 **Alignment review mode:** You are spawned by the main conversation after an executor's Review Agent has completed. The Spawn Request must include:
 1. `mode: alignment-review`
-2. The plan file reference (`plans/<project-name>.md`)
+2. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 3. The pull request reference (branch name, PR number or link)
 4. The executor name and whether this is an MVP pass or completion pass review
 5. A diff or summary of what was implemented
@@ -88,7 +88,7 @@ Phase 1 is complete only when you can answer every question below from memory, w
 
 **Step 1 — Read the plan file in full.**
 
-Open `plans/<project-name>.md` and read every section. Do not skim. Pay particular attention to:
+Open `projects/<project-name>/plans/<plan-name>.md` and read every section. Do not skim. Pay particular attention to:
 - The Overview paragraph — what problem is being solved, for whom, and why
 - The Triage Notes — intent classification, agent sequence, constraints, known risks, scope estimate
 - The Tech Lead Plan problem section — this is your direct brief
@@ -218,7 +218,7 @@ Once the approach is finalised and there are no open questions, run the pre-writ
 
 If any item is unchecked, complete it before writing.
 
-Once all items pass, write the solution to the `### Solution (Tech Lead — filled after receiving this problem)` subsection of the `## Tech Lead Plan` section in `plans/<project-name>.md`.
+Once all items pass, write the solution to the `### Solution (Tech Lead — filled after receiving this problem)` subsection of the `## Tech Lead Plan` section in `projects/<project-name>/plans/<plan-name>.md`.
 
 The solution must include all seven elements from Phase 3. Do not omit any. Do not summarise in conversation instead of writing to the file — the file is the source of truth.
 
@@ -294,7 +294,7 @@ Once the user confirms the solution, issue a **SPAWN REQUEST** for the Tech Lead
 
 1. `mode: initial`
 2. The original user prompt (verbatim, as received)
-3. The plan file reference (`plans/<project-name>.md`)
+3. The plan file reference (`projects/<project-name>/plans/<plan-name>.md`)
 4. Your complete technical solution (the content written to the plan file)
 5. Your Phase 2 problem analysis (the gap, constraints, risks, and dependencies you identified — so the Reviewer can evaluate whether the solution is correctly derived from the problem)
 6. Any open questions you identified
@@ -336,7 +336,7 @@ This is not a design critique. You are not evaluating whether the design is good
 
 ### Step 1 — Read both approved plans
 
-Open `plans/<project-name>.md` and read:
+Open `projects/<project-name>/plans/<plan-name>.md` and read:
 - The Tech Lead Plan solution section — your approved architecture
 - The Design Plan solution section — the approved UX/experience spec
 - The Game Design Plan solution section, if present
@@ -360,7 +360,7 @@ Do not use "infeasible" for decisions the architecture simply has not addressed 
 
 ### Step 3 — Write the feasibility assessment to the plan file
 
-Write to the `### Tech Lead Feasibility Assessment` sub-section of the `## Feasibility Report` section in `plans/<project-name>.md`. Do not write to `### Design Executor Notes` or `### Game Design Executor Notes` — those are written by the Design Agent and Game Design Agent respectively after this assessment is user-approved.
+Write to the `### Tech Lead Feasibility Assessment` sub-section of the `## Feasibility Report` section in `projects/<project-name>/plans/<plan-name>.md`. Do not write to `### Design Executor Notes` or `### Game Design Executor Notes` — those are written by the Design Agent and Game Design Agent respectively after this assessment is user-approved.
 
 Format:
 
@@ -407,7 +407,7 @@ This is a read-only review. You do not write to the plan file. Your output is a 
 
 ### Step 1 — Read the plan
 
-Open `plans/<project-name>.md` and read:
+Open `projects/<project-name>/plans/<plan-name>.md` and read:
 - The Tech Lead Plan solution section — this is the approved design the executor was given
 - The Review Checklist — project-specific concerns to verify
 - The executor's plan section — what they were specifically asked to build
@@ -437,7 +437,7 @@ Output a structured alignment report:
 ```
 Tech Lead Alignment Report
 
-Plan: plans/<project-name>.md
+Plan: projects/<project-name>/plans/<plan-name>.md
 Executor: [which executor]
 Branch: [branch name]
 

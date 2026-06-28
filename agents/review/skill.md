@@ -1,4 +1,4 @@
-# Review Agent — Skill File
+﻿# Review Agent — Skill File
 
 ## ⚠ READ THIS ENTIRE FILE BEFORE DOING ANYTHING
 
@@ -37,7 +37,7 @@ Every finding must be grounded in one of: the plan (deviation), `shared/conventi
 The spawn prompt from the executor will include:
 
 - **PR URL** — the GitHub pull request to review
-- **Plan file** — `plans/<project-name>.md`
+- **Plan file** — `projects/<project-name>/plans/<plan-name>.md`
 - **Sections to check against** — the specific plan sections for this executor (e.g., `### Tech Lead Notes`, `### Design Notes`, `### Game Design Notes`)
 - **Mode** — `mvp` or `completion`
 - **Executor type** — Executor-React / Dotnet / Python / Database / Godot
@@ -56,7 +56,7 @@ Before looking at any code, read:
 1. `shared/conventions.md` — the coding standards every executor must follow
 2. `CLAUDE.md` — the absolute prohibitions, especially the security section
 3. `projects/<project-name>/docs/project-brief.md` — if it exists: the project's north star and high-level goal. Use it to understand what the project is trying to achieve; flag anything in the PR that appears to work against the stated goal or user need as a MAJOR finding.
-4. `plans/<project-name>.md` — in full, with emphasis on:
+4. `projects/<project-name>/plans/<plan-name>.md` — in full, with emphasis on:
    - `## Review Checklist` — project-specific concerns raised by Triage. These take priority over your standard checklist — if the Triage Agent flagged "make sure auth tokens are never logged," look for that specifically.
    - The plan sections specified in the spawn prompt (Tech Lead Notes, Design Notes, Game Design Notes as applicable)
    - `## Triage Notes` — overall feature scope and routing rationale

@@ -1,6 +1,6 @@
-# How to Write Good Plans
+﻿# How to Write Good Plans
 
-Plans live in this folder. Each project gets **one plan file**, named by the user and the Triage Agent together at the start of the first prompt: `plans/<chosen-name>.md`.
+Plans live in this folder. Each project gets **one plan file**, named by the user and the Triage Agent together at the start of the first prompt: `projects/<project-name>/plans/<plan-name>.md`.
 
 A plan file is not written in one go. It is a conversation between the user and the Triage Agent. The Triage Agent asks questions, the user answers, and together they fill the problem sections until each one is specific enough for the downstream agent to understand the problem they are being asked to solve.
 
@@ -59,7 +59,7 @@ Signs a problem section needs more work:
 
 On the first prompt, before filling any sections, the Triage Agent will ask:
 
-> "What would you like to call this plan? This will be the filename: `plans/<your-name>.md`."
+> "What would you like to call this plan? This will be the filename: `projects/<project-name>/plans/<plan-name>.md`."
 
 The name should be short, descriptive, and kebab-cased (e.g. `user-auth`, `inventory-system`, `level-editor`). The Triage Agent will suggest a name based on the prompt if the user is unsure.
 
@@ -90,7 +90,7 @@ Every plan file follows this structure. Only include sections for agents actuall
 ```markdown
 # Plan: <Descriptive Title>
 
-**File:** plans/<chosen-name>.md
+**File:** projects/<project-name>/plans/<plan-name>.md
 **Status:** Draft | Approved | In Progress | Complete
 **Project folder:** projects/<project-name>/ *(fill once confirmed — may not exist yet when this file is created)*
 **Created:** <YYYY-MM-DD> by <user name>
