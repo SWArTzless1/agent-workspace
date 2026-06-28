@@ -407,26 +407,20 @@ Agent slug reference:
 | Executor-Database | `executor-database` |
 | Executor-Godot | `executor-godot` |
 
-**Step 2 — Open monitor panes (one `wt` command covers all agents in a spawn).**
+**Step 2 — Tell the user which slugs to monitor.**
 
-Run this via the Bash tool immediately after writing the status file(s) and before the Agent tool call(s). The `;` tokens are wt command separators, quoted so Bash passes them literally.
+Do NOT attempt to open panes automatically — the `wt split-pane` command cannot split an existing Windows Terminal window from a subprocess and will open a new window instead.
 
-*1 agent:*
-```bash
-wt split-pane -V --size 0.5 --title "<AgentName>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug>'" ";" move-focus left
+Instead, immediately after writing the status file(s), output a monitor instruction to the user:
+
+```
+Monitor pane(s): open a new pane in Windows Terminal (Ctrl+Shift+5) and run:
+  powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug>'"
+
+For parallel agents, open one pane per agent with the corresponding slug.
 ```
 
-*2 agents in parallel:*
-```bash
-wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.5 --title "<Agent2>" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
-```
-
-*3 agents in parallel:*
-```bash
-wt split-pane -V --size 0.5 --title "<Agent1>" --startingDirectory "C:\Users\hanss\Documents\agent-workspace" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug1>'" ";" split-pane -H --size 0.333 --title "<Agent3>" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug3>'" ";" move-focus up ";" split-pane -H --size 0.5 --title "<Agent2>" -- powershell -NoExit -Command "& 'C:\Users\hanss\Documents\agent-workspace\agents\monitor.ps1' '<slug2>'" ";" move-focus left
-```
-
-The `move-focus left` at the end returns keyboard focus to the main chat pane automatically.
+The user opens the pane(s) manually. The status files update automatically as agents progress.
 
 **Step 3 — Update the status file when the agent returns.**
 
