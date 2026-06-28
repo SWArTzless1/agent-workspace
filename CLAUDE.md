@@ -539,54 +539,11 @@ Use these model assignments when calling the Agent tool. Pass `model:` exactly a
 
 ### Feasibility Review Trigger
 
-When both the Tech Lead plan AND the Design plan (and the Game Design plan, for Godot projects) have been independently approved by their respective reviewers, the main conversation presents a Feasibility Review Phase Checkpoint:
-
-```
-PHASE CHECKPOINT — FEASIBILITY REVIEW
-═══════════════════════════════════════════════════
-Phase complete: Tech Lead plan and Design plan both independently approved.
-
-Next: Tech Lead — feasibility mode
-What it will do: Read both approved plans, identify conflicts between the 
-technical architecture and the design requirements, and produce a feasibility 
-report with specific alternatives for any infeasible items.
-
-Key inputs: Plan file (Tech Lead solution + Design solution + Aligned Design 
-Decisions section), mode: feasibility.
-
-Note: The feasibility report is reviewed directly by you — no reviewer agent 
-is spawned. You will see the report and approve or request revision before 
-Design Notes are written.
-
-Ready to proceed? (yes / re-route via Triage / stop here)
-═══════════════════════════════════════════════════
-```
-
-After the Tech Lead (feasibility mode) produces its feasibility assessment and the user approves it, the main conversation spawns Design Agent (design-notes-only mode) and — if Game Design is in the routing sequence — Game Design Agent (notes-only mode) simultaneously. Both write their executor notes sections in parallel: Design Agent writes `### Design Executor Notes` in the Feasibility Report and `### Design Notes` in relevant executor sections; Game Design Agent writes `### Game Design Executor Notes` in the Feasibility Report and `### Game Design Notes` in Executor-Godot.
+When all planning agents (Tech Lead, Design, and Game Design if routed) are independently approved, present a standard Phase Checkpoint to spawn Tech Lead (feasibility mode). The Tech Lead reads all approved plans, identifies conflicts, and produces a feasibility report — reviewed directly by the user, no reviewer agent. After user approval, spawn Design Agent (design-notes-only) and Game Design Agent (notes-only, if routed) simultaneously to write their executor notes sections in parallel.
 
 ### Tech Lead Design Recommendation
 
-If the Tech Lead flags UX implications in Phase 2 or early Phase 3 (before finalising its solution), the main conversation surfaces this as a Phase Checkpoint:
-
-```
-PHASE CHECKPOINT — DESIGN AGENT RECOMMENDATION
-═══════════════════════════════════════════════════
-The Tech Lead has flagged that this work has user experience implications 
-and recommends involving the Design Agent before implementation.
-
-Option A — Add Design Agent to the sequence
-  After Tech Lead approval, Design Agent will produce an independent UX spec.
-  A feasibility review will follow before executors are spawned.
-
-Option B — Proceed without Design Agent
-  The Tech Lead will note the UX implications in its solution.
-  Executors will work from the Tech Lead plan only.
-
-Which do you prefer?
-═══════════════════════════════════════════════════
-```
-
-If the user selects Option A, the main conversation adds Design Agent to the sequence before executors and proceeds accordingly after Tech Lead Reviewer approval.
+If the Tech Lead flags UX implications before finalising its solution, present a Phase Checkpoint offering two options: (A) add Design Agent to the sequence — a UX spec and feasibility review will follow before executors are spawned; or (B) proceed without Design Agent — Tech Lead notes the UX implications and executors work from the Tech Lead plan only. If the user selects A, add Design Agent to the sequence after Tech Lead Reviewer approval.
 
 ### Execution Ordering
 
@@ -609,106 +566,20 @@ The goal is maximum concurrent work. The Tech Lead is responsible for decomposin
 ## Agent Flow
 
 ```
-User Prompt
-    │
-    ▼
-[Triage Agent]  ← entry point, never spawned
-    │  Plans with user, section by section
-    │  Writes routing decision to plan file
-    │                           [USER CHECKPOINT — plan sign-off]
-    ▼
-[Triage Reviewer]  ← spawned by Triage (sub-agent)
-    │  Verifies routing + plan quality independently
-    │  Issues found → [USER CHECKPOINT] → Triage resolves
-    │  All clear → approves
-    ▼
-[MAIN CONVERSATION PHASE CHECKPOINT]
-    │  "Triage complete. Next: Tech Lead. Proceed?"
-    ▼
-[Tech Lead — planning mode]  ← spawned by main conversation
-    │  Architecture, tech choices, task breakdown
-    │  May flag UX implications → [MAIN CONVERSATION DESIGN RECOMMENDATION]
-    ▼
-[Tech Lead Reviewer]  ← spawned by Tech Lead (sub-agent)
-    │  Challenges every decision. One revision cycle before USER CHECKPOINT.
-    │  Approves.
-    ▼
-[MAIN CONVERSATION PHASE CHECKPOINT]
-    │  "Tech Lead complete. Next: Design Agent (if in sequence) or Executor."
-    │
-    ├─── if Tech Lead + Design (+ Game Design) in sequence ───────────────┐
-    │                                                                      │
-    │   [MAIN CONVERSATION — PARALLEL SPAWN]                               │
-    │   Spawns all planning agents simultaneously:                         │
-    │   ┌─────────────────────┬─────────────────────┬──────────────────┐  │
-    │   │ Tech Lead           │ Design Agent        │ Game Design      │  │
-    │   │ (planning mode)     │ (planning mode)     │ (Godot only)     │  │
-    │   │ ↓                   │ ↓                   │ ↓                │  │
-    │   │ Tech Lead Reviewer  │ Design Reviewer     │ GD Reviewer      │  │
-    │   └─────────────────────┴─────────────────────┴──────────────────┘  │
-    │        (all run independently; main conversation waits for all)      │
-    │       ▼                                                              │
-    │   [MAIN CONVERSATION PHASE CHECKPOINT — FEASIBILITY REVIEW]         │
-    │       │  "All planning phases approved. Next: Tech Lead feasibility."│
-    │       ▼                                                              │
-    │   [Tech Lead — feasibility mode]  ← spawned by main conversation    │
-    │       │  Reads all approved plans. Produces feasibility report.      │
-    │       │  User reviews feasibility report directly (no reviewer).     │
-    │       │                           [USER CHECKPOINT — report review]  │
-    │       ▼                                                              │
-    │   [MAIN CONVERSATION PHASE CHECKPOINT]                               │
-    │       │  "Feasibility resolved. Next: executor notes from Design     │
-    │       │   and Game Design agents. Proceed?"                          │
-    │       ▼                                                              │
-    │   [MAIN CONVERSATION — PARALLEL SPAWN]                               │
-    │   ┌──────────────────────────────┬──────────────────────────────┐   │
-    │   │ Design Agent                 │ Game Design Agent            │   │
-    │   │ (design-notes-only mode)     │ (notes-only mode, if routed) │   │
-    │   │ Writes:                      │ Writes:                      │   │
-    │   │ • Design Executor Notes      │ • GD Executor Notes          │   │
-    │   │   (Feasibility Report)       │   (Feasibility Report)       │   │
-    │   │ • Design Notes               │ • Game Design Notes          │   │
-    │   │   (executor sections)        │   (Executor-Godot)           │   │
-    │   └──────────────────────────────┴──────────────────────────────┘   │
-    │       ▼                                                              │
-    │   [MAIN CONVERSATION PHASE CHECKPOINT]                               │
-    │       │  "All executor notes written. Ready to begin executor phase."│
-    │                                                                      │
-    └──────────────────────────────────────────────────────────────────────┘
-             │
-             │  All executors start MVP pass simultaneously.
-             │  Each creates its own task branch.
-             │
-    [MAIN CONVERSATION — PARALLEL SPAWN — MVP PASSES]
-    ┌──────────────────┬──────────────────┬──────────────┬──────────────────┬────────────────┐
-    │ Executor-React   │ Executor-Dotnet  │Executor-Python│Executor-Database│ Executor-Godot │
-    │ mode: mvp        │ mode: mvp        │ mode: mvp    │ mode: mvp        │ mode: mvp      │
-    │ (mock API)       │ (in-memory store)│(mock services)│ (full schema)   │ (stub data)    │
-    │ ↓                │ ↓                │ ↓            │ ↓                │ ↓              │
-    │ Review Agent     │ Review Agent     │ Review Agent │ Review Agent     │ Review Agent   │
-    └──────────────────┴──────────────────┴──────────────┴──────────────────┴────────────────┘
-             │
-             │  As each MVP pass is reviewed and Phase Cleared:
-             │  Main conversation checks the Executor Dependency Map.
-             │
-    [MAIN CONVERSATION — COMPLETION TRIGGER CHECKPOINTS]
-    (fires per executor as its dependency is cleared — may run in parallel)
-             │
-    [Executor-X — mode: completion]  ← spawned by main conversation
-    Wires real dependency artifact. Extends MVP implementation.
-             ↓
-    [Review Agent]  ← spawned by Executor (sub-agent)
-             │
-    [MAIN CONVERSATION PHASE CHECKPOINT]
-    "Executor-X complete and reviewed."
-             ↓
-    [Tech Lead — alignment review mode]  ← spawned by main conversation
-    Checks implementation against approved plans (per PR)
-             │
-    [MAIN CONVERSATION PHASE CHECKPOINT — MERGE DECISION]
-    "Both reviews complete. Merge when ready."
-             │
-    [USER CHECKPOINT — merge decision]
+Prompt → Triage → Triage Reviewer → [USER CHECKPOINT — plan sign-off]
+       → Phase Checkpoint → Tech Lead (planning) → Tech Lead Reviewer
+
+If Design / Game Design in routing sequence (all planning agents spawn in parallel,
+each with their own reviewer; main conversation waits for all approvals):
+  → Phase Checkpoint → Tech Lead (feasibility)  [USER CHECKPOINT — report review]
+  → Design Agent (notes-only) + Game Design Agent (notes-only)  [parallel]
+
+All routed Executors (mode: mvp) spawn simultaneously — each on its own task branch.
+  Each → Review Agent → Phase Cleared row written.
+  As MVP passes clear → Completion Trigger Checkpoints fire per Dependency Map.
+  Each Executor (mode: completion) → Review Agent
+
+Per PR → Tech Lead (alignment review) → [USER CHECKPOINT — merge decision]
 ```
 
 ---
@@ -774,30 +645,12 @@ Do not spawn until the user replies with approval.
 
 ```
 agent-workspace/
-  agents/
-    triage/
-    triage-reviewer/
-    tech-lead/
-    tech-lead-reviewer/
-    design/
-    design-reviewer/
-    game-design/
-    game-design-reviewer/
-    executor-react/
-    executor-dotnet/
-    executor-python/
-    executor-database/
-    executor-godot/
-    review/
-  plans/
-    README.md              # How to write good plans
-    <project-name>.md      # One plan file per project, sections per agent
-  projects/                # One subfolder per active project
-  shared/
-    agent-roles.md         # Detailed role definitions
-    conventions.md         # Coding style all executors follow
-    glossary.md            # Shared terminology
-  CLAUDE.md                # This file
+  agents/<name>/skill.md   — one folder per agent (see Agent Roster)
+  agents/runtime/          — live status files written during agent sessions
+  plans/<project>.md       — one plan file per project
+  projects/<project>/      — project repos (excluded from workspace git)
+  shared/                  — agent-roles.md, conventions.md, glossary.md
+  CLAUDE.md
 ```
 
 Projects live under `projects/<project-name>/`. If a project folder contains its own `CLAUDE.md`, those rules take precedence over workspace conventions for that project.
