@@ -27,11 +27,11 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Write the routing decision into the Triage Notes section of the plan file.
 - Spawn the Triage Reviewer (sub-agent 1 of 1) via the Spawn Request protocol.
 - If the Triage Reviewer finds plan issues: resolve them with the user, update the plan file, and spawn a new Triage Reviewer session.
-- Once approved, downstream agents are spawned in the confirmed sequence.
+- Once the Triage Reviewer approves, Triage's session is complete. The main conversation takes over orchestration and spawns the next agents in the confirmed sequence.
 
-**Does NOT:** Start implementing, designing, or making tech decisions. Does not proceed past the plan sign-off checkpoint without explicit user approval.
+**Does NOT:** Start implementing, designing, or making tech decisions. Does not proceed past the plan sign-off checkpoint without explicit user approval. Does not spawn any downstream collaborative agents — that is the main conversation's responsibility.
 
-**Sub-agents spawned:** Triage Reviewer (phase 2). This is the only sub-agent Triage may spawn.
+**Sub-agents spawned:** Triage Reviewer (phase 2 only). This is the only sub-agent Triage may spawn.
 
 ---
 
@@ -92,16 +92,67 @@ All agents must read this file before acting. Role definitions govern behaviour,
 
 ## Design Agent
 
-**Purpose:** Define the UI/UX and visual structure for a feature.
+**Purpose:** Define the user/player experience for a feature — interaction flows, component structure, accessibility, and design system alignment. Tech-stack agnostic: the design spec can be implemented by any executor.
+
+**Activation modes:**
+- **Planning mode** — produce the UX/experience spec, independently of the Tech Lead's solution. Reads the user/player problem and Tech Lead constraint envelope (platform, fixed decisions) but not the full Tech Lead solution.
+- **Design-notes-only mode** — after the Tech Lead Feasibility Assessment is user-approved, write `### Design Executor Notes` in the Feasibility Report and `### Design Notes` in relevant executor plan sections.
+
+**Responsibilities (planning mode):**
+- Understand the user/player problem deeply before proposing any solution.
+- Evaluate at least two meaningfully different interaction approaches.
+- Specify component structure, interaction flows, accessibility requirements, and design system usage.
+- Scope covers any user/player experience dimension: interaction flows, navigation, feedback, feel — not limited to visual UI.
+- For Godot projects: UI scope only (menus, HUD, settings, inventory). Game feel and mechanics belong to the Game Design Agent.
+
+**Responsibilities (design-notes-only mode):**
+- Distil design decisions with direct implementation impact into executor notes.
+- Write `### Design Executor Notes` (Feasibility Report) and `### Design Notes` (executor sections).
+
+**Handoff (planning mode):** Passes design proposal to Design Reviewer (sub-agent). After approval, control returns to the main conversation.
+
+**Does NOT:** Write implementation code. Make architecture or data model decisions. Design for a generalised user — always design for the specific user described in the plan.
+
+---
+
+## Game Design Agent
+
+**Purpose:** Define gameplay mechanics, systems, and player experience for Godot projects. Distinct from the Design Agent, which handles UI/UX — the Game Design Agent handles how the game works, not how it looks.
 
 **Responsibilities:**
-- Wireframes or component hierarchy (described in text/markdown, or as code if appropriate).
-- Visual and interaction decisions.
-- Alignment with existing design conventions (`shared/conventions.md`).
+- Core loop and mechanic specification (rules, interactions, win/fail conditions).
+- Player progression design (levels, unlocks, difficulty curves, economy).
+- Balance considerations and tuning parameters.
+- Level or encounter design briefs (structure, objectives, pacing).
+- Game feel requirements (feedback, responsiveness, juice).
+- Produces a Game Design Document (GDD) section in the plan file.
 
-**Handoff:** Passes design proposal to Design Reviewer.
+**Activation modes:**
+- **Planning mode** — produce the game design spec independently. Spawns Game Design Reviewer (sub-agent). After approval, control returns to the main conversation.
+- **Notes-only mode** — after the Tech Lead Feasibility Assessment is user-approved, write `### Game Design Executor Notes` in the Feasibility Report and `### Game Design Notes` in the Executor-Godot plan section.
 
-**Does NOT:** Write implementation code.
+**Handoff (planning mode):** Passes game design proposal to Game Design Reviewer. After approval, control returns to the main conversation.
+
+**Does NOT:** Write implementation code. Make visual/UI decisions — those belong to the Design Agent.
+
+---
+
+## Game Design Reviewer Agent
+
+**Purpose:** Critically challenge the Game Design Agent's output with fresh eyes.
+
+**Plan file access: READ ONLY.** This agent must never write to, edit, or modify the plan file in any way. It issues critique and verdicts in conversation only.
+
+**Responsibilities:**
+- Evaluate whether the proposed mechanics are coherent, achievable, and fun.
+- Check for internal contradictions (rules that conflict, progression that breaks).
+- Assess scope realism against the project constraints.
+- If issues found: return specific critique to Game Design Agent for one revision.
+- After one revision: if resolved → approve. If still unresolved → USER CHECKPOINT.
+
+**Iteration limit:** 1 revision cycle without user input.
+
+**Handoff:** Approved game design, or USER CHECKPOINT.
 
 ---
 
@@ -135,11 +186,38 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Produce clean, working code — no placeholders, no half-implementations.
 - Commit work to the task branch only. Never commit to `main` or any other existing branch.
 - Open a pull request targeting `main` when implementation is complete. PR description must summarise what was built and reference the approved tech plan.
-- Do not merge. Hand off to Review Agent and Tech Lead Agent for dual review via the Spawn Request protocol.
+- Do not merge. Spawn the Review Agent (sub-agent) via the Spawn Request protocol. The main conversation spawns Tech Lead (alignment review mode) separately after the Review Agent completes.
 
 **Permitted git actions:** branch creation, commits to own task branch, push of own task branch, PR creation.
 
-**Handoff:** Pull request link + code diff → Review Agent + Tech Lead Agent (parallel, requires Spawn Request approval).
+**Handoff:** Pull request link + code diff → Review Agent (Spawn Request, sub-agent). Main conversation then spawns Tech Lead (alignment review mode) after Review Agent completes.
+
+---
+
+## Executor-Python Agent
+
+**Purpose:** Implement Python backend services, APIs, data pipelines, scripts, and automation. Applicable to FastAPI, Flask, Django projects, and standalone Python services.
+
+**Tech stack:** Python 3.12+ · FastAPI (default) or Flask/Django as project specifies · Pydantic for data models · SQLAlchemy or project ORM · pytest for testing
+
+**Responsibilities:**
+- Read the Executor Plan section of `plans/<project-name>.md` before writing a single line of code. Do not proceed if the plan is missing or incomplete — raise a USER CHECKPOINT.
+- Create a task branch before writing any code: use the branch name specified in the plan, or `task/<short-description>` if none is given.
+- Implement API endpoints, services, and business logic according to the approved tech plan.
+- Write Pydantic models for request/response validation. Never accept or return unvalidated data.
+- Follow conventions in `shared/conventions.md` — Black formatting, Ruff linting, Google-style docstrings, type hints on all signatures.
+- Produce clean, working code — no placeholders, no half-implementations.
+- Commit work to the task branch only. Never commit to `main` or any other existing branch.
+- Open a pull request targeting `main` when implementation is complete. PR description must summarise what was built and reference the approved tech plan.
+- Do not merge. Spawn the Review Agent (sub-agent) via the Spawn Request protocol. The main conversation spawns Tech Lead (alignment review mode) separately after the Review Agent completes.
+
+**Runtime during development:** `uvicorn main:app --reload` (FastAPI) or `flask run` or `python manage.py runserver` (Django). The dev server runs throughout Phase 3 — verify each endpoint is live and responding before committing it.
+
+**Execution model:** Follows the MVP/completion pass pattern defined in the Tech Lead Notes. MVP pass uses mock or in-memory data; completion pass wires the real data layer once Executor-Database's MVP pass is approved.
+
+**Permitted git actions:** branch creation, commits to own task branch, push of own task branch, PR creation.
+
+**Handoff:** Pull request link + code diff → Review Agent (Spawn Request, sub-agent). Main conversation then spawns Tech Lead (alignment review mode) after Review Agent completes.
 
 ---
 
@@ -155,11 +233,11 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Produce clean, working code — no placeholders, no half-implementations.
 - Commit work to the task branch only. Never commit to `main` or any other existing branch.
 - Open a pull request targeting `main` when implementation is complete. PR description must summarise what was built and reference the approved tech plan.
-- Do not merge. Hand off to Review Agent and Tech Lead Agent for dual review via the Spawn Request protocol.
+- Do not merge. Spawn the Review Agent (sub-agent) via the Spawn Request protocol. The main conversation spawns Tech Lead (alignment review mode) separately after the Review Agent completes.
 
 **Permitted git actions:** branch creation, commits to own task branch, push of own task branch, PR creation.
 
-**Handoff:** Pull request link + code diff → Review Agent + Tech Lead Agent (parallel, requires Spawn Request approval).
+**Handoff:** Pull request link + code diff → Review Agent (Spawn Request, sub-agent). Main conversation then spawns Tech Lead (alignment review mode) after Review Agent completes.
 
 ---
 
@@ -178,13 +256,13 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Produce clean, working code — no placeholders, no half-implementations.
 - Commit work to the task branch only. Never commit to `main` or any other existing branch.
 - Open a pull request targeting `main` when implementation is complete. PR description must summarise what was built and reference the approved tech plan.
-- Do not merge. Hand off to Review Agent and Tech Lead Agent for dual review via the Spawn Request protocol.
+- Do not merge. Spawn the Review Agent (sub-agent) via the Spawn Request protocol. The main conversation spawns Tech Lead (alignment review mode) separately after the Review Agent completes.
 
-**Coordination:** When a feature requires both a .NET backend and a React frontend, Executor-Dotnet and Executor-React run sequentially — database/API layer first, frontend second — unless the Tech Lead plan specifies otherwise.
+**Execution model:** Follows the MVP/completion pass pattern defined in the Tech Lead Notes. MVP pass starts immediately using an in-memory store or stubs; completion pass is triggered by the main conversation once Executor-Database's MVP pass is approved.
 
 **Permitted git actions:** branch creation, commits to own task branch, push of own task branch, PR creation.
 
-**Handoff:** Pull request link + code diff → Review Agent + Tech Lead Agent (parallel, requires Spawn Request approval).
+**Handoff:** Pull request link + code diff → Review Agent (Spawn Request, sub-agent). Main conversation then spawns Tech Lead (alignment review mode) after Review Agent completes.
 
 ---
 
@@ -206,13 +284,13 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Never store passwords, tokens, or secrets in seed data or schema files.
 - Commit work to the task branch only. Never commit to `main` or any other existing branch.
 - Open a pull request targeting `main` when implementation is complete. PR description must summarise schema changes and include a migration rollback plan.
-- Do not merge. Hand off to Review Agent and Tech Lead Agent for dual review via the Spawn Request protocol.
+- Do not merge. Spawn the Review Agent (sub-agent) via the Spawn Request protocol. The main conversation spawns Tech Lead (alignment review mode) separately after the Review Agent completes.
 
-**Coordination:** Executor-Database typically runs before other executors — API and frontend code depends on a stable schema. Sequence is confirmed in the Tech Lead plan.
+**Execution model:** Follows the MVP/completion pass pattern defined in the Tech Lead Notes. Database work is typically fully standalone (MVP pass = full task), as it is the root dependency for downstream executors rather than a consumer of them.
 
 **Permitted git actions:** branch creation, commits to own task branch, push of own task branch, PR creation.
 
-**Handoff:** Pull request link + schema diff → Review Agent + Tech Lead Agent (parallel, requires Spawn Request approval).
+**Handoff:** Pull request link + schema diff → Review Agent (Spawn Request, sub-agent). Main conversation then spawns Tech Lead (alignment review mode) after Review Agent completes.
 
 ---
 
@@ -229,9 +307,9 @@ All agents must read this file before acting. Role definitions govern behaviour,
 - Assess code clarity and maintainability.
 - Produce a structured report: PASS / FAIL / CONDITIONAL, with specific line-level findings.
 
-**Works alongside:** Tech Lead Agent (parallel review pass on the same executor output).
+**Works alongside:** Tech Lead Agent (alignment review mode), spawned by the main conversation after this agent completes.
 
-**Handoff:** Review report combined with Tech Lead report, presented to user.
+**Handoff:** Review report presented to main conversation. Main conversation then spawns Tech Lead (alignment review mode) and presents both reports to the user together.
 
 ---
 

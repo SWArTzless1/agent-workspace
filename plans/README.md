@@ -15,19 +15,22 @@ When the plan is complete and the user has signed off, the Triage Agent spawns t
 | Agent | Access |
 |---|---|
 | Triage Agent | Read + Write (problem sections and Triage Notes only) |
-| Tech Lead | Read + Write (Tech Lead solution section only) |
-| Design Agent | Read + Write (Design solution section only) |
+| Tech Lead | Read + Write (Tech Lead solution section + `### Tech Lead Notes` sub-sections of routed executors only) |
+| Design Agent | Read + Write (Design solution section + `### Design Notes` sub-section of Executor-React and Executor-Godot when UI work is involved) |
+| Game Design Agent | Read + Write (Game Design solution section + `### Game Design Executor Notes` in Feasibility Report + `### Game Design Notes` in Executor-Godot) |
 | Executor-Database | Read + Write (Database solution section only) |
 | Executor-Dotnet | Read + Write (Dotnet solution section only) |
+| Executor-Python | Read + Write (Python solution section only) |
 | Executor-React | Read + Write (React solution section only) |
 | Executor-Godot | Read + Write (Godot solution section only) |
 | Plan Review Agent | **Read only** — never edits |
 | Triage Reviewer | **Read only** — never edits |
 | Tech Lead Reviewer | **Read only** — never edits |
 | Design Reviewer | **Read only** — never edits |
+| Game Design Reviewer | **Read only** — never edits |
 | Review Agent | **Read only** — never edits |
 
-Only **active agents** (Triage, Tech Lead, Design, Executor-Database, Executor-Dotnet, Executor-React, Executor-Godot) may write to the **Audit Trail** section. Review agents never write to the plan file — their verdicts and reports appear in the conversation, not in the file. No agent may modify content written by another agent in any other section.
+Only **active agents** (Triage, Tech Lead, Design, Game Design, Executor-Database, Executor-Dotnet, Executor-Python, Executor-React, Executor-Godot) may write to the **Audit Trail** section. Review agents never write to the plan file — their verdicts and reports appear in the conversation, not in the file. No agent may modify content written by another agent in any other section.
 
 ---
 
@@ -107,8 +110,11 @@ Every plan file follows this structure. Only include sections for agents actuall
 - [Triage Notes](#triage-notes)
 - [Tech Lead Plan](#tech-lead-plan) *(if applicable)*
 - [Design Plan](#design-plan) *(if applicable)*
+- [Game Design Plan](#game-design-plan) *(if applicable — Godot projects only)*
+- [Feasibility Report](#feasibility-report) *(if Tech Lead + Design and/or Game Design are all in sequence)*
 - [Database Plan](#database-plan) *(if applicable)*
 - [Executor Plan — Dotnet](#executor-plan--dotnet) *(if applicable)*
+- [Executor Plan — Python](#executor-plan--python) *(if applicable)*
 - [Executor Plan — React](#executor-plan--react) *(if applicable)*
 - [Executor Plan — Godot](#executor-plan--godot) *(if applicable)*
 - [Review Checklist](#review-checklist)
@@ -148,7 +154,20 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 - **Expected steps for the Tech Lead:** Understand the technical problem → evaluate options within constraints → propose architecture or approach → define tasks for executors
 
 ### Solution (Tech Lead — filled after receiving this problem)
-*The Tech Lead will complete this section. It must include: chosen architecture/approach with rationale, technology decisions, risks identified, and the task breakdown for executors.*
+*The Tech Lead will complete this section. It must include: chosen architecture/approach with rationale, technology decisions, rejected alternatives, identified risks, security considerations, and open questions.*
+
+### Executor Dependency Map (Tech Lead Agent — filled after tech plan is approved)
+*The Tech Lead will define the execution order for all routed executors. The goal is maximum parallelism: every executor should have meaningful standalone work it can begin immediately.*
+
+| Executor | MVP pass (starts immediately) | Completion pass trigger | Dependency artifact |
+|---|---|---|---|
+| Executor-Database | [what can be built standalone] | N/A — full task in MVP | — |
+| Executor-Dotnet | [what can be built with mocks/stubs] | After [executor] MVP approved | [specific artifact: schema, contract, etc.] |
+| Executor-Python | [what can be built with mock services] | After [executor] MVP approved | [specific artifact: schema, contract, etc.] |
+| Executor-React | [what can be built with mock API] | After [executor] completion approved | [specific artifact: endpoint contracts, etc.] |
+| Executor-Godot | [what can be built with stub data] | After [executor] MVP approved | [specific artifact] |
+
+*Only include rows for executors in the current routing sequence. Executors with no dependencies have "N/A" in the completion pass column.*
 
 ---
 
@@ -169,9 +188,51 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 
 ---
 
+## Game Design Plan
+
+<!-- PROBLEM WRITTEN BY: Triage Agent | SOLUTION WRITTEN BY: Game Design Agent — Godot projects only -->
+
+### Problem (Triage)
+- **Gameplay problem:** What mechanic, system, or player experience is missing or broken?
+- **Player goal:** What should the player be able to do or feel after this is implemented?
+- **What exists now:** Current state of relevant systems, mechanics, or progression — what is working, what is absent
+- **Constraints:** Target platform, performance limits, scope limits, existing design decisions that must not change
+- **Expected steps for the Game Design Agent:** Understand the player experience problem → specify mechanics and rules → define progression and balance → produce a game design brief for Executor-Godot
+
+### Solution (Game Design Agent — filled after receiving this problem)
+*The Game Design Agent will complete this section. It must include: core mechanic or system specification, rules and interactions, player progression or balance parameters, and how the design addresses the stated player experience problem.*
+
+---
+
+## Feasibility Report
+
+<!-- Only include when Tech Lead + Design and/or Game Design are all in the routing sequence -->
+<!-- Tech Lead Feasibility Assessment written AFTER Design and Game Design complete their independent passes and reviewer cycles -->
+<!-- Design Executor Notes written BY: Design Agent (design-notes-only mode) AFTER feasibility assessment is user-approved -->
+<!-- Game Design Executor Notes written BY: Game Design Agent (notes-only mode) AFTER feasibility assessment is user-approved — Godot projects only -->
+
+### Tech Lead Feasibility Assessment (Tech Lead — feasibility mode)
+*Written after all planning agents complete their independent passes. Assesses whether each design and game design decision can be built within the approved technical architecture.*
+
+| Decision | Source | Verdict | Notes |
+|---|---|---|---|
+| [design or game design decision] | Design / Game Design | Feasible / Feasible with constraint / Infeasible | [constraint or alternative] |
+
+**Summary:** [one paragraph — overall feasibility, number of conflicts, what requires revision before executors can start]
+
+### Design Executor Notes (Design Agent — design-notes-only mode)
+*Written after the Tech Lead Feasibility Assessment is user-approved. Distils the design decisions that directly affect executor implementation — component names, interaction rules the code must enforce, accessibility requirements with code impact.*
+*Leave blank until Design Agent writes here.*
+
+### Game Design Executor Notes (Game Design Agent — notes-only mode)
+*Written after the Tech Lead Feasibility Assessment is user-approved — Godot projects only. Distils the mechanic and progression rules that executors must enforce in code: stat ranges, win/fail conditions, rule logic, timing constraints.*
+*Leave blank until Game Design Agent writes here. Omit this sub-section entirely for non-Godot projects.*
+
+---
+
 ## Database Plan
 
-<!-- PROBLEM WRITTEN BY: Triage Agent | SOLUTION WRITTEN BY: Executor-Database -->
+<!-- PROBLEM WRITTEN BY: Triage Agent | TECH LEAD NOTES WRITTEN BY: Tech Lead Agent | SOLUTION WRITTEN BY: Executor-Database -->
 
 ### Problem (Triage)
 - **Data problem:** What data needs to be stored, retrieved, or related that currently isn't?
@@ -180,6 +241,18 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 - **Known constraints:** Compliance, performance, scale requirements
 - **Expected steps for Executor-Database:** Understand the data problem → review the Tech Lead's solution → validate the proposed schema solves the problem → design and implement schema, migrations, seed data
 
+### Tech Lead Notes (Tech Lead Agent — filled after tech plan is approved)
+
+**MVP pass** (starts immediately — no dependency required):
+*What Executor-Database can build standalone. For database work this is usually the full task (schema + migrations), as it is typically the root dependency rather than a consumer.*
+- Specific task: [what to implement]
+- Interface contracts to produce: [schema tables, fields, and relationships that downstream executors will depend on]
+- Acceptance criteria for MVP pass: [what done looks like]
+
+**Completion pass**: N/A — database work is typically fully standalone.
+
+**Key technical constraints:** [non-negotiable decisions from the tech plan this executor must respect]
+
 ### Solution (Executor-Database — filled after Tech Lead approval)
 *Executor-Database will complete this section. It must confirm: (a) how the Tech Lead's solution addresses the data problem, (b) schema design, (c) migration plan with rollback, (d) branch name.*
 
@@ -187,7 +260,7 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 
 ## Executor Plan — Dotnet
 
-<!-- PROBLEM WRITTEN BY: Triage Agent | SOLUTION WRITTEN BY: Executor-Dotnet -->
+<!-- PROBLEM WRITTEN BY: Triage Agent | TECH LEAD NOTES WRITTEN BY: Tech Lead Agent | SOLUTION WRITTEN BY: Executor-Dotnet -->
 
 ### Problem (Triage)
 - **Backend problem:** What API capability or service needs to exist that does not exist now?
@@ -196,14 +269,65 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 - **Known constraints:** Auth rules, rate limits, existing API contracts that must not break
 - **Expected steps for Executor-Dotnet:** Understand the backend problem → review the Tech Lead's solution → validate the approach solves the problem → implement endpoints, services, and models
 
+### Tech Lead Notes (Tech Lead Agent — filled after tech plan is approved)
+
+**MVP pass** (starts immediately):
+*What Executor-Dotnet can build before the database schema is finalised — using an in-memory store, hardcoded seed data, or repository stubs.*
+- Specific task: [what to implement standalone]
+- Mocking approach: [what to stub or use in-memory]
+- Interface contracts to produce: [endpoint signatures and service contracts downstream executors will depend on]
+- Acceptance criteria for MVP pass: [what done looks like]
+
+**Completion pass** (triggered after Executor-Database MVP approved):
+- Specific task: [what to wire up once the real schema is available]
+- Dependency artifact: [schema tables and fields from Executor-Database]
+- Acceptance criteria for completion pass: [what done looks like with real data layer]
+
+**Key technical constraints:** [non-negotiable decisions from the tech plan this executor must respect]
+
 ### Solution (Executor-Dotnet — filled after Tech Lead approval)
 *Executor-Dotnet will complete this section. It must confirm: (a) how the Tech Lead's solution addresses the backend problem, (b) endpoints and services to implement, (c) acceptance criteria, (d) branch name.*
 
 ---
 
+## Executor Plan — Python
+
+<!-- PROBLEM WRITTEN BY: Triage Agent | TECH LEAD NOTES WRITTEN BY: Tech Lead Agent | DESIGN NOTES WRITTEN BY: Design Agent (if applicable) | SOLUTION WRITTEN BY: Executor-Python -->
+
+### Problem (Triage)
+- **Python service problem:** What API capability, service, script, or data pipeline needs to exist that does not exist now?
+- **Who calls it and why:** Consumers of this service and what they need from it
+- **User-facing outcome:** What does a working implementation enable for the end user (or calling service)?
+- **Known constraints:** Auth rules, rate limits, existing API contracts that must not break, environment requirements (Python version, target runtime)
+- **Expected steps for Executor-Python:** Understand the service problem → review the Tech Lead's solution → validate the approach solves the problem → implement endpoints, services, and models
+
+### Tech Lead Notes (Tech Lead Agent — filled after tech plan is approved)
+
+**MVP pass** (starts immediately):
+*What Executor-Python can build before the database schema is finalised — using mock data, in-memory stores, or hardcoded responses.*
+- Specific task: [what to implement standalone]
+- Mocking approach: [what to stub or mock in-memory]
+- Interface contracts to produce: [endpoint signatures, Pydantic schemas, and service contracts downstream executors will depend on]
+- Acceptance criteria for MVP pass: [what done looks like]
+
+**Completion pass** (triggered after Executor-Database MVP approved):
+- Specific task: [what to wire up once the real schema is available]
+- Dependency artifact: [schema tables and fields from Executor-Database]
+- Acceptance criteria for completion pass: [what done looks like with real data layer]
+
+**Key technical constraints:** [non-negotiable decisions from the tech plan this executor must respect]
+
+### Design Notes (Design Agent — filled after design is approved, if applicable)
+*The Design Agent will complete this section only when the Python service is called by a user-facing client and the response shape directly affects the UX (e.g., error message format, field naming that maps to UI labels). Omitted when the Python service is purely internal.*
+
+### Solution (Executor-Python — filled after Tech Lead approval)
+*Executor-Python will complete this section. It must confirm: (a) how the Tech Lead's solution addresses the service problem, (b) endpoints and modules to implement, (c) acceptance criteria, (d) branch name.*
+
+---
+
 ## Executor Plan — React
 
-<!-- PROBLEM WRITTEN BY: Triage Agent | SOLUTION WRITTEN BY: Executor-React -->
+<!-- PROBLEM WRITTEN BY: Triage Agent | TECH LEAD NOTES WRITTEN BY: Tech Lead Agent | DESIGN NOTES WRITTEN BY: Design Agent | SOLUTION WRITTEN BY: Executor-React -->
 
 ### Problem (Triage)
 - **Frontend problem:** What UI or interaction does not exist or does not work correctly for the user?
@@ -212,6 +336,24 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 - **Known constraints:** Browser support, existing component library, API contracts from the .NET layer
 - **Expected steps for Executor-React:** Understand the frontend problem → review Tech Lead's solution and Design output → validate the approach solves the user problem → implement components and pages
 
+### Tech Lead Notes (Tech Lead Agent — filled after tech plan is approved)
+
+**MVP pass** (starts immediately):
+*What Executor-React can build before the real API endpoints exist — using hardcoded mock responses or a local mock server.*
+- Specific task: [what to implement standalone]
+- Mocking approach: [what API shapes to mock and how]
+- Acceptance criteria for MVP pass: [what done looks like with mocked data]
+
+**Completion pass** (triggered after Executor-Dotnet [MVP/completion] approved):
+- Specific task: [what to wire up once the real endpoints are available]
+- Dependency artifact: [specific endpoint contracts: method, path, request/response shapes, auth requirements]
+- Acceptance criteria for completion pass: [what done looks like with real API]
+
+**Key technical constraints:** [non-negotiable decisions from the tech plan this executor must respect]
+
+### Design Notes (Design Agent — filled after design is approved)
+*The Design Agent will complete this section with a distilled, implementation-ready design brief for Executor-React, including: component list with purposes, interaction specifications, accessibility requirements, and design system usage (reused / extended / new components).*
+
 ### Solution (Executor-React — filled after Tech Lead and Design approval)
 *Executor-React will complete this section. It must confirm: (a) how the Tech Lead's and Design Agent's solutions address the frontend problem, (b) components and pages to implement, (c) acceptance criteria, (d) branch name.*
 
@@ -219,7 +361,7 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 
 ## Executor Plan — Godot
 
-<!-- PROBLEM WRITTEN BY: Triage Agent | SOLUTION WRITTEN BY: Executor-Godot -->
+<!-- PROBLEM WRITTEN BY: Triage Agent | TECH LEAD NOTES WRITTEN BY: Tech Lead Agent | DESIGN NOTES WRITTEN BY: Design Agent (UI only) | GAME DESIGN NOTES WRITTEN BY: Game Design Agent | SOLUTION WRITTEN BY: Executor-Godot -->
 
 ### Problem (Triage)
 - **Gameplay / system problem:** What behaviour, mechanic, or system does not exist or does not work correctly?
@@ -228,7 +370,29 @@ One paragraph. What problem is being solved, why, and for whom. Written in plain
 - **Known constraints:** Target platform, performance limits, existing scene structure that must not break
 - **Expected steps for Executor-Godot:** Understand the gameplay/system problem → review the Tech Lead's solution → validate the approach solves the problem → implement scenes, scripts, and data layer
 
-### Solution (Executor-Godot — filled after Tech Lead approval)
+### Tech Lead Notes (Tech Lead Agent — filled after tech plan is approved)
+
+**MVP pass** (starts immediately):
+*What Executor-Godot can build before the data layer or external services are ready — using hardcoded stub data, local mock resources, or placeholder signals.*
+- Specific task: [what to implement standalone]
+- Mocking approach: [what to stub: scenes, signals, data sources]
+- Interface contracts to produce: [scene/script interfaces and signal contracts downstream systems depend on]
+- Acceptance criteria for MVP pass: [what done looks like with stub data]
+
+**Completion pass** (triggered after [dependency executor] MVP/completion approved):
+- Specific task: [what to wire up once the real data layer or services are available]
+- Dependency artifact: [specific artifact: database API, service contract, signal interface]
+- Acceptance criteria for completion pass: [what done looks like with real dependencies]
+
+**Key technical constraints:** [non-negotiable decisions from the tech plan this executor must respect]
+
+### Design Notes (Design Agent — filled after feasibility report is approved, UI work only)
+*The Design Agent will complete this section only when the Godot work includes player-facing UI (menus, HUD, inventory, etc.). Distils the design decisions with direct implementation impact: component list, interaction rules the code must enforce, accessibility requirements with code impact. Omitted when the Godot work has no UI component.*
+
+### Game Design Notes (Game Design Agent — filled after feasibility report is approved)
+*The Game Design Agent will complete this section with the mechanic and progression rules Executor-Godot must enforce in code: stat ranges, win/fail conditions, rule logic, timing constraints, and any balance parameters the implementation must respect. Derived from the Game Design solution and the Game Design Executor Notes in the Feasibility Report.*
+
+### Solution (Executor-Godot — filled after Tech Lead, Design, and Game Design approval)
 *Executor-Godot will complete this section. It must confirm: (a) how the Tech Lead's solution addresses the gameplay/system problem, (b) scenes and scripts to implement, (c) acceptance criteria, (d) branch name.*
 
 ---

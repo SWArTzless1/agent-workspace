@@ -124,7 +124,9 @@ Once the plan is fully approved, determine the sequence of agents needed.
 | React frontend only | Executor-React → Review + Tech Lead |
 | Godot implementation only | Executor-Godot → Review + Tech Lead |
 | Full-stack web feature | Tech Lead → Executor-Database → Executor-Dotnet → Executor-React (each with Review + Tech Lead) |
-| Full-stack Godot feature | Tech Lead → Executor-Database → Executor-Godot (each with Review + Tech Lead) |
+| Godot gameplay / mechanics design only | Game Design → Game Design Reviewer |
+| Full-stack Godot feature | Tech Lead → Game Design → Executor-Database → Executor-Godot (each with Review + Tech Lead) |
+| Full-stack Godot feature (no mechanics design needed) | Tech Lead → Executor-Database → Executor-Godot (each with Review + Tech Lead) |
 | Bug fix (no architecture change) | Relevant executor(s) → Review + Tech Lead |
 | Refactoring | Tech Lead → relevant executor(s) → Review + Tech Lead |
 | Code review only | Review + Tech Lead (parallel, no executor) |
