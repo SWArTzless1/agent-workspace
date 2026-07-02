@@ -438,8 +438,6 @@ git commit -m "$(cat <<'EOF'
 feat: add migration <sequence> — <description>
 
 Creates/modifies: [list of tables and columns]. Rollback: [brief description of what DROP does].
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -471,8 +469,6 @@ git commit -m "$(cat <<'EOF'
 feat: add development seed data
 
 Seeds [N] rows into [table list] for local development.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -521,8 +517,6 @@ docs: add schema documentation for downstream executors
 
 Documents all tables, columns, indexes, and FK relationships
 introduced in this pass.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
