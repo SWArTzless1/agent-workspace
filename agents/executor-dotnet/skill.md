@@ -410,8 +410,6 @@ git commit -m "$(cat <<'EOF'
 feat: set up InMemory data layer and DI registrations for <feature-name> (MVP pass)
 
 Registers AppDbContext with InMemory provider. Adds [service names] to DI.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -467,8 +465,6 @@ git commit -m "$(cat <<'EOF'
 feat: implement [HTTP verb] [route] (MVP pass)
 
 [One sentence on what this endpoint does and what cases it handles]
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -551,8 +547,6 @@ feat: wire PostgreSQL data layer (completion pass)
 
 Replaces InMemory with real PostgreSQL via Npgsql. Applies migrations.
 Maps DB constraint errors [constraint names] to correct HTTP status codes.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```

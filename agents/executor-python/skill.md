@@ -241,8 +241,6 @@ git commit -m "$(cat <<'EOF'
 chore: project infrastructure for <feature-name>
 
 Adds pyproject.toml, project structure, settings class, and app skeleton.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -344,8 +342,6 @@ git commit -m "$(cat <<'EOF'
 feat: implement <endpoint or module name> (<MVP/completion> pass)
 
 [One sentence on what this endpoint or service does and what states it handles]
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```

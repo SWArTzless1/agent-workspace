@@ -375,8 +375,6 @@ git commit -m "$(cat <<'EOF'
 feat: add MVP mock layer and query keys for <feature-name>
 
 Sets up mock.ts, queryKeys.ts, queries.ts, and types.ts for the MVP pass.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -429,8 +427,6 @@ git commit -m "$(cat <<'EOF'
 feat: implement <ComponentName> (MVP pass)
 
 <one sentence on what this component does and what states it handles>
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -505,8 +501,6 @@ git commit -m "$(cat <<'EOF'
 feat: wire [endpoint name] real API (completion pass)
 
 Replaces mock with real [endpoint URL]. Handles [error codes] per Design Notes.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```

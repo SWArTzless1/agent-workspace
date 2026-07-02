@@ -333,8 +333,6 @@ chore: project infrastructure setup for <feature-name>
 
 Adds .gitignore, registers autoloads, input map, physics layers,
 and test directory structure.
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -425,8 +423,6 @@ git commit -m "$(cat <<'EOF'
 feat: implement [scene/system name] ([MVP/completion] pass)
 
 [One sentence on what this scene or system does and what states it handles]
-
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>
 EOF
 )"
 ```
