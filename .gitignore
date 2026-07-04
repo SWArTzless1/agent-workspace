@@ -1,1 +1,5 @@
-projects/projects/mvp-test-1/
+projects/ApartmentBrowser/
+projects/ApartmentSearch/
+
+# Live agent-monitor status scratch files (see CLAUDE.md Agent Monitor Protocol) — .gitkeep stays tracked
+agents/runtime/*.md

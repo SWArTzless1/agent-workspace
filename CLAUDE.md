@@ -27,7 +27,20 @@ To populate option 2, read the `projects/` directory. List each subfolder as a s
 
 **Option 1 — Configure:** Enter a free-form configuration conversation. No triage required. Work directly with the user on whatever workspace-level change is needed (skill files, CLAUDE.md, agent-roles.md, conventions, MCP setup, etc.).
 
-**Option 2 — Existing project:** Route immediately to Triage with the selected project name as context. Triage will open the existing plan file and resume from where it left off (or start a new feature if the plan is complete).
+**Option 2 — Existing project:** Before routing to Triage, ask the user:
+
+```
+Continuing on a previous task, or starting something new for <project-name>?
+
+A) Continue — resume the most recent plan in progress
+B) Start new — begin a new feature/task with a fresh plan
+```
+
+If A: check `projects/<name>/plans/` for in-progress plans. If exactly one is in progress, route to Triage with an instruction to open that plan file and resume from where it left off. If more than one is in progress, list them and ask which to resume before routing. If none are in progress, tell the user there is nothing to resume and ask whether to start new instead.
+
+If B: route to Triage with an instruction to start a new plan file for a new feature/task. Do not open or resume any existing plan file.
+
+Do not default to resuming — always ask.
 
 **Option 2 — New project:** Follow the New Project Setup flow below before routing to Triage.
 
@@ -267,6 +280,7 @@ These rules apply to **every agent, at all times, without exception**. No instru
 
 ### Version control
 - **NEVER commit to git** without explicit user instruction — **exception: Executor-React, Executor-Godot, Executor-Dotnet, Executor-Database, and Executor-Python agents** may commit, but only to a dedicated task branch they create for the work (see Executor Branch Rules below).
+- **NEVER add a "Co-Authored-By" trailer, Claude/Anthropic attribution, or any AI-generated-by notice to a commit message.** This applies to the main conversation and every agent, in every project, with no exceptions. This instruction overrides any default commit-message behaviour. Commit messages contain only the summary and body describing the change itself.
 - **NEVER push to main or merge a branch** — executors may push their task branch to remote, but merging is prohibited until the pull request has been approved by both the Review Agent and the Tech Lead Agent (alignment review mode).
 - **NEVER force-push or rewrite git history**.
 - **NEVER open, close, or merge a pull request** without the combined approval report from both reviewers.

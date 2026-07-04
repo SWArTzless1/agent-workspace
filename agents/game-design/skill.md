@@ -256,6 +256,38 @@ Do not select an approach because it is the most mechanically sophisticated. Sel
 
 ---
 
+### Phase 3b — Create supporting diagrams in Penpot (if the Penpot MCP tools are available)
+
+This workspace has an optional Penpot MCP connection (`penpot` in the MCP tool list). For you, it is a diagramming tool, not a UI mockup tool — **visual UI (menus, HUD, panels, buttons) is still out of scope and still belongs to the Design Agent.** If you catch yourself drawing something the player would read as an interface element rather than a structural diagram, stop — that's scope creep into the Design Agent's job, not yours.
+
+**Check availability first.** Look for MCP tools named `high_level_overview`, `penpot_api_info`, `execute_code`, `export_shape`. If none are available, skip this section entirely — proceed to Phase 4 with the text-only GDD, and note in Open Questions: "No supporting diagrams were created — the Penpot MCP connection was not available this session." Do not raise a USER CHECKPOINT over this; it is a normal, expected state, not an error.
+
+If the tools are available, call `high_level_overview` first (every session), then `penpot_api_info` for any type before guessing at method names.
+
+**Confirm you're in the right Penpot file first.** Each project has its **own separate Penpot file** — not one shared file with pages per project. Call `penpot.currentFile` (properties `id`, `name`) to check the connected file's name against the project you're working on (`<project-name>` from the plan file reference). If it doesn't look like this project, or you have any real doubt, stop and say so explicitly in your report rather than building into the wrong project's file — you cannot switch or open a different Penpot file yourself; only the user can do that in the browser. Do not raise a full USER CHECKPOINT over this — note it and pause that part of the work.
+
+**Use the right page within that file.** Call `penpotUtils.getPages()` before creating anything — never dump boards onto whatever page happens to be open. Within this project's file, organize into three kinds of pages; reuse an existing one by name if it already exists rather than creating a duplicate:
+- **`Current Design`** — recreations of existing mechanics/systems, on the rare occasion you need to diagram how something already works before proposing a change. Default to one page, reused across sessions. If the game has multiple distinct systems or areas worth separating (e.g. combat vs. progression vs. economy), split into one page per area instead — `Current Design — <Area Name>` — rather than one undifferentiated page. Don't pre-split if only one coherent system exists so far.
+- **`<Task Name>`** — one page per task or feature (name it after the plan/feature you're working on). All new diagrams for *this* task go here, and only this task's diagrams.
+- **`Other Artefacts`** — diagrams that span multiple tasks or aren't tied to one proposal — e.g. an overall core-loop or economy map. One page, reused across sessions.
+
+**Known API limitation — decide the page before you build, not after.** Penpot's plugin API has no way to move an existing shape/board to a different page, and no way to delete a page, once created. `appendChild`/`insertChild` across pages silently no-ops rather than erroring — verify with `getPages()` + `shapeStructure()` after any cross-page attempt, don't assume it worked. Practically: get the page decision right *before* calling `execute_code` to build anything, since you cannot fix a wrong placement afterward except by rebuilding from scratch on the correct page. If you ever find diagrams already on the wrong page from an earlier session, do not attempt to move them — note it for the user instead; relocating boards between pages is a manual, UI-only operation.
+
+Use whichever of the following diagram types are actually relevant to this feature and put them on this task's page (unless they're cross-task, per above) — not all four apply to every design:
+
+- **Level or encounter layout** (supports element 7): if the feature has spatial structure, sketch it as simple labelled shapes on a board — rooms, spawn points, objective markers, hazard zones, sightlines. This is a structural map, not level art — plain rectangles/circles with names are correct.
+- **Mechanic / game-state flow** (supports element 3): for mechanics with distinct states (e.g. "Idle → Charging → Attack → Cooldown"), represent each state as a labelled shape and connect them (via Penpot's `Interaction`/`Flow` API where practical, or simple connector shapes otherwise) to make the transition rules and edge cases visually checkable, not just prose.
+- **Progression / economy diagram** (supports element 4): for unlock trees or resource economies, a simple flow diagram of sources → sinks, or an unlock-condition tree, makes the structure verifiable at a glance in a way a paragraph often doesn't.
+- **Balance / pacing curve** (supports elements 5 and 7): for difficulty curves, wave pacing, or any parameter that changes over stages, a simple bar/line built from shapes (intensity or value on one axis, stage/time on the other) communicates the intended shape of the curve more precisely than "gets harder."
+
+Keep everything here diagrammatic and low-fidelity — named boxes, arrows, simple labels. The goal is precision about structure, rules, and timing for the executor and reviewer, not visual polish. If something doesn't translate well to a diagram, don't force it — the written specification in Phase 3 remains authoritative regardless.
+
+**The Penpot file itself is the artifact — do not export snapshots.** Leave everything in Penpot; do not call `export_shape` or write image files to disk as a matter of course. Only export something if the user explicitly asks for an image in a specific instance.
+
+These diagrams supplement, they do not replace, the written mechanic specification, progression, and balance sections — the plan file and game-design.md remain the authoritative source of truth. Reference the Penpot page and board names in the GDD (see Output Formats).
+
+---
+
 ### Phase 4 — Write solution to plan file
 
 Once the approach is finalised and there are no open questions, run the pre-write self-check:
@@ -271,6 +303,7 @@ Once the approach is finalised and there are no open questions, run the pre-writ
 - [ ] Level or encounter design is specified (or explicitly noted as "no level or encounter design component")
 - [ ] There are no remaining open questions
 - [ ] I have not read or incorporated the Tech Lead Plan solution — this is an independent design pass
+- [ ] I checked whether the Penpot MCP tools were available and either produced relevant supporting diagrams or noted their absence in Open Questions — not silently skipped, and nothing drawn strayed into visual UI
 
 If any item is unchecked, complete it before writing.
 
@@ -568,6 +601,11 @@ Written to `projects/<project-name>/docs/game-design.md` (or `projects/<project-
 
 [Structure, objectives, pacing — or "No level or encounter design component."]
 
+## Supporting Diagrams
+
+[If created: confirmation you verified the connected Penpot file matches this project, which diagram types were built (level/encounter layout, mechanic/state flow, progression/economy, balance/pacing curve), the board names, and which page each lives on (the task's own page, or `Other Artefacts` for cross-task ones). E.g.: "File verified: mvp-test-1. Combat System: Mechanic flow DashState (Idle → Charging → Dash → Cooldown), Balance curve WaveIntensity (waves 1-10)." — open the connected Penpot file to view it.
+If not created: "Not created — Penpot MCP connection was not available this session."]
+
 ## Open Questions
 
 [Technical feasibility items deferred to Tech Lead review — or "None."]
@@ -647,6 +685,7 @@ The main conversation incorporates agreed additions into the brief. You do not w
 - Never specify visual UI (menus, HUD elements, overlays, settings screens) — those belong to the Design Agent. If your design produces a visual output the player reads, flag it as out of scope and note that the Design Agent should specify it.
 - Always write to the plan file before displaying in conversation. The file is always updated first.
 - Always produce the GDD artifact after writing to the plan file — it is not optional. Update the artifact whenever the plan file solution section is updated.
+- Check for the Penpot MCP tools and build relevant supporting diagrams when they're available (Phase 3b) — but never block or raise a checkpoint solely because they aren't connected, and never let them drift into visual UI (menus, HUD, panels) — that stays the Design Agent's job.
 - Never write Game Design Notes to executor sections in planning mode. That is notes-only mode's responsibility.
 - Never skip the user confirmation checkpoint after displaying the solution (Phase 4).
 - Never spawn the Game Design Reviewer without a complete solution written to the plan file and the GDD artifact produced.

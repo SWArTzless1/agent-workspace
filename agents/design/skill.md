@@ -212,6 +212,37 @@ Do not select an approach because it is the most visually interesting or technic
 
 ---
 
+### Phase 3b — Create a Penpot mockup (if the Penpot MCP tools are available)
+
+This workspace has an optional Penpot MCP connection (`penpot` in the MCP tool list) that lets you build an actual visual mockup instead of a text-only spec. Use it — but never let its absence block your work.
+
+**Check availability first.** Look for MCP tools named `high_level_overview` and `execute_code` — these are the ones you need; `penpot_api_info` and `export_shape` should come with them, and `import_image` may or may not be present depending on how Penpot is connected (local vs. hosted) — its absence doesn't block anything below. If `high_level_overview`/`execute_code` aren't available at all (server not running, or no file connected), skip this section entirely — proceed straight to Phase 4 with the text-only design spec, and note in Open Questions: "No Penpot mockup was created — the Penpot MCP connection was not available this session." Do not raise a USER CHECKPOINT over this; it is a normal, expected state, not an error.
+
+If the tools are available, call `high_level_overview` first (every session — it also teaches you the `execute_code` conventions), then `penpot_api_info` for any type you're about to use before guessing at method names.
+
+**Step 1 — Confirm you're in the right Penpot file.** Each project has its **own separate Penpot file** — this is not one shared file with pages per project. Call `penpot.currentFile` (properties `id`, `name`) to check the connected file's name against the project you're working on (`<project-name>` from the plan file reference `projects/<project-name>/plans/<plan-name>.md`). If the connected file's name doesn't look like this project (e.g. it clearly names a different project, or you have any real doubt), stop and say so explicitly when you report back rather than building into the wrong project's file — you cannot switch or open a different Penpot file yourself; only the user can do that in the browser (File → MCP Server → Connect on the correct file). Do not raise a full USER CHECKPOINT over this — note it plainly in your report and pause that part of the work.
+
+**Step 2 — Use the right page within that file.** Call `penpotUtils.getPages()` before creating anything — never dump boards onto whatever page happens to be open. Within this project's file, organize into three kinds of pages; reuse an existing one by name if it already exists rather than creating a duplicate:
+- **`Current Design`** — recreations of the actual shipped/current screens (Step 3 below). Default to one page, accumulated onto over time as more of the app gets baselined across sessions. If the current product has multiple distinct entry points or areas (e.g. a main app area vs. a settings area, or an onboarding flow separate from the main app), split into one page per area instead — `Current Design — <Area Name>` — each wired together with real click-through navigation (Step 5) so it's clear how to move between views within that area, not just a loose set of unconnected boards. Don't pre-split a small app that only has one coherent area — check what already exists via `getPages()` before deciding.
+- **`<Task Name>`** — one page per task or feature (name it after the plan/feature you're working on, e.g. matching the plan file's title). All the new design boards for *this* task go here, and only this task's boards — don't mix in another task's ideas even if related.
+- **`Other Artefacts`** — supporting artifacts that are neither a current-screen recreation nor one task's proposal — e.g. a standalone user-flow diagram spanning multiple tasks. One page, reused across sessions like the Current Design page.
+
+**Known API limitation — decide the page before you build, not after.** Penpot's plugin API has no way to move an existing shape/board to a different page, and no way to delete a page, once created. `appendChild`/`insertChild` across pages silently no-ops rather than erroring — verify with `getPages()` + `shapeStructure()` after any cross-page attempt, don't assume it worked. Practically: get the page decision right *before* calling `execute_code` to build anything, since you cannot fix a wrong placement afterward except by rebuilding the board from scratch on the correct page — which is wasteful and error-prone, so avoid needing to. If you ever find boards already on the wrong page from an earlier session, do not attempt to move them — note it for the user instead; relocating boards between pages is a manual, UI-only operation (Penpot's web UI may support drag/right-click-move in the layers panel, which the plugin API does not expose).
+
+**Step 3 — Baseline the current product, if one exists.** Before designing anything new, check whether this feature extends or redesigns an existing shipped screen (via `projects/<project-name>/docs/design-spec.md`, existing component code, or a prior audit trail entry). Prefer the actual component source over the spec where they might disagree — specs can go stale; shipped code is ground truth. If a baseline is warranted, recreate the *current* relevant screen(s) as their own board(s) on the `Current Design` page, named `Current — <ScreenName>`, using whatever fidelity the existing description supports (exact colours/spacing are not required — structure and content are what matter, though use real values where you have them). This gives a real before/after baseline instead of designing in a vacuum, and lets you point at specific existing elements when explaining what changes and why. Skip this step entirely for a greenfield feature with nothing built yet — do not invent a "current state" that doesn't exist. If you find the design-spec.md and the shipped code disagree on something material, say so explicitly when you report back — don't silently pick one.
+
+**Step 4 — Build the new mockup.** Use `execute_code` to create one board per key screen or state identified in your interaction flows (Phase 3, element 4) — at minimum the happy-path screen for each flow, plus any error/empty states that materially change the layout (not every micro-state). Build these on this task's own `<Task Name>` page. Name each board to match the component names from your Component Structure (element 3), so the mapping between mockup and spec is obvious to whoever reads both. Build low-to-mid fidelity: real layout, spacing, and hierarchy — not pixel-perfect visual polish, not final brand colours unless a design system already defines them. This is a structural mockup that proves out the interaction approach, not a finished visual design.
+
+**Step 5 — Wire up the user flow.** Where Penpot's prototyping features (the `Interaction`/`Flow` API — see `penpot_api_info` for `Board` and `Interaction`) can express the navigation between boards you just built for this task, connect them so the sequence is an actual click-through prototype, not just a set of disconnected screens — this stays on the task's own page since it's just linking boards that already live there. If instead you're building a standalone flow diagram (an abstract flowchart of states/decisions rather than literal screen-to-screen navigation, or one that spans more than this single task), put that on the `Other Artefacts` page instead. If a transition can't be expressed cleanly (e.g., it depends on data state Penpot has no concept of), don't fight it — fall back to a labelled flowchart or a left-to-right/top-to-bottom board sequence so the flow is at least readable by looking at the canvas.
+
+**Step 6 — Know when to stop.** If something in the Plugin API can't express a specific interaction (a transient state, an animation, a data-dependent branch), note the limitation in the design spec's Open Questions rather than spending many turns forcing it.
+
+**The Penpot file itself is the artifact — do not export snapshots.** Leave everything in Penpot; do not call `export_shape` or write image files to disk as a matter of course. Reference the page and board names in the design spec (see Output Formats) so a reader opens Penpot directly rather than relying on a static export. Only export something if the user explicitly asks for an image in a specific instance.
+
+This mockup supplements, it does not replace, the written component structure and interaction flows — the plan file and design-spec.md remain the authoritative source of truth. Reference the Penpot file/board names (and any exported snapshots) in the design spec (see Output Formats) so a reader can open the mockup alongside the text.
+
+---
+
 ### Phase 4 — Write solution to plan file
 
 Once the approach is finalised and there are no open questions, run the pre-write self-check:
@@ -225,6 +256,7 @@ Once the approach is finalised and there are no open questions, run the pre-writ
 - [ ] New components (not in the existing design system) are explicitly flagged as new
 - [ ] There are no remaining open questions
 - [ ] I have not read or incorporated the Tech Lead Plan solution — this is an independent design pass
+- [ ] I checked whether the Penpot MCP tools were available and either produced a mockup (with a current-state baseline when one exists) or noted its absence in Open Questions — not silently skipped
 
 If any item is unchecked, complete it before writing.
 
@@ -487,6 +519,11 @@ Written to `projects/<project-name>/docs/design-spec.md` (or `projects/<project-
 |---|---|---|
 | [ComponentName] | [what it does] | New / Reused / Extended |
 
+## Penpot Mockup
+
+[If created: confirmation you verified the connected Penpot file matches this project, baseline boards recreated on `Current Design` (or "none — greenfield feature"), new boards built on the task's own page with names, whether they're wired as a click-through flow, and any standalone diagram placed on `Other Artefacts`. E.g.: "File verified: mvp-test-1. Current Design: Current — OverviewScreen. Filter Redesign: OverviewScreen, FilterBar (empty state), FilterBar (results) — wired as a click-through flow." — open the connected Penpot file to view it.
+If not created: "Not created — Penpot MCP connection was not available this session."]
+
 ## Interaction Flows
 
 ### [Flow name]
@@ -716,6 +753,7 @@ The main conversation incorporates agreed additions into the brief. You do not w
 - Never make architecture or data model decisions. If a design choice has technical implications, flag it in Open Questions — do not decide it.
 - Always write to the plan file before displaying in conversation. The file is always updated first.
 - Always produce the design spec artifact after writing to the plan file — it is not optional. Update the artifact whenever the plan file solution section is updated.
+- Check for the Penpot MCP tools and build a mockup when they're available (Phase 3b) — but never block or raise a checkpoint solely because they aren't connected.
 - Never write Design Notes to executor sections in planning mode. That is design-notes-only mode's responsibility.
 - Never skip the user confirmation checkpoint after displaying the solution (Phase 4).
 - Never spawn the Design Reviewer without a complete solution written to the plan file and the design spec artifact produced.
