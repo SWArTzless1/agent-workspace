@@ -296,8 +296,9 @@ These rules apply to all executor agents: Executor-React, Executor-Godot, Execut
 
 1. **Create a task branch** before writing any code. Branch naming: `task/<short-description>` (e.g. `task/add-login-screen`).
 2. **Commit only to that branch** — never to `main` or any other existing branch.
-3. **Open a pull request** when implementation is complete, targeting `main`. The PR description must summarise what was built and reference the approved tech plan.
-4. **Do not merge**. The PR sits open until both the Review Agent and Tech Lead Agent (alignment review mode) have submitted their approval reports. Merging is a USER CHECKPOINT — the user decides when to merge after seeing both reports.
+3. **Stay within your own stack's files.** Executor-React edits frontend files, Executor-Python edits backend files, and so on — never another executor's stack, unless the Tech Lead's plan explicitly assigns that file to you. Within your own stack, inside `projects/<name>/`, you do not need to check in before editing — edit and write freely there without asking. This is not enforced by a filesystem permission (Claude Code has no notion of "which executor" is calling a tool), so it is enforced at review time instead: the Review Agent's Task Scope dimension (`agents/review/skill.md`) already flags any file in the diff that wasn't in the approved Tech Lead Notes as a MAJOR finding — an out-of-stack edit is exactly this case. Trust that check instead of asking before every edit.
+4. **Open a pull request** when implementation is complete, targeting `main`. The PR description must summarise what was built and reference the approved tech plan.
+5. **Do not merge**. The PR sits open until both the Review Agent and Tech Lead Agent (alignment review mode) have submitted their approval reports. Merging is a USER CHECKPOINT — the user decides when to merge after seeing both reports.
 
 ### GitHub Bot Identities
 
