@@ -352,26 +352,103 @@ A CONDITIONAL verdict does not block the Tech Lead alignment review — the main
 
 ## Phase 5 — Post the review to GitHub
 
-After producing the REVIEW REPORT in conversation, post it as a GitHub PR review. This makes the findings visible to the executor (when it checks out the branch to fix things), to the user (directly on GitHub), and creates a thread where the executor or user can push back on individual findings.
+After producing the REVIEW REPORT in conversation, post it as a GitHub PR review **with each finding attached as an inline comment on its exact file and line**, not folded into one large text block. This puts each finding directly in the Files Changed tab next to the code it's about, and gives each finding its own reply thread so the executor or user can push back on one finding without losing track of which one they mean. Findings with no specific file/line (`File: N/A — whole PR`) stay in the top-level review body instead — GitHub cannot attach an inline comment without a line.
 
-Extract the PR number from the URL (e.g., `https://github.com/owner/repo/pull/123` → `123`).
+Extract the PR number from the URL. Resolve `owner/repo` by running `gh repo view --json nameWithOwner -q .nameWithOwner` from inside the repo, rather than parsing it from the URL or a remote — **the repo may have been renamed on GitHub since the local clone or the URL you were given was created** (this happened in practice: a stale `owner/old-name` in a `gh api` call gets a `307 Moved Permanently`, which `gh api` does **not** auto-follow on `POST`, so the review silently fails to post). `gh repo view` always resolves the current canonical name.
 
-Post using the Review Agent bot identity via the `GH_TOKEN_REVIEWER` environment variable — never the default `gh` session, and never the Tech Lead's `GH_TOKEN_TECHLEAD`. **Do not rely on `$GH_TOKEN_REVIEWER` being present in your shell's inherited environment** — it is a Windows user-level environment variable, and a shell/session started before the token was set will not see it even though it exists. Instead, read it live from the registry once, into a local shell variable, before your first `gh pr review` call:
+Post using the Review Agent bot identity via the `GH_TOKEN_REVIEWER` environment variable — never the default `gh` session, and never the Tech Lead's `GH_TOKEN_TECHLEAD`. **Do not rely on `$GH_TOKEN_REVIEWER` being present in your shell's inherited environment** — it is a Windows user-level environment variable, and a shell/session started before the token was set will not see it even though it exists. Instead, read it live from the registry once, into a local shell variable, before your first GitHub call:
 
 ```bash
 GH_TOKEN_REVIEWER="$(powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable('GH_TOKEN_REVIEWER','User')")"
 ```
 
-If this returns empty, the token genuinely is not set — fall back per the missing-token rule below. Otherwise, prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_REVIEWER"` (the local variable you just captured) so the review posts as the bot account, distinct from whichever identity opened the PR.
+If this returns empty, the token genuinely is not set — fall back per the missing-token rule below.
 
-Post using the verdict-appropriate event type:
+**Step 1 — Set up a scratch directory Python can actually read.** `gh pr review`'s CLI flags cannot post inline comments — only GitHub's Pull Request Review API can (`POST /repos/{owner}/{repo}/pulls/{number}/reviews`), and that needs a JSON payload. Hand-escaping markdown findings into JSON is error-prone, so instead write each piece of free text to its own file and let Python assemble and JSON-escape everything in Step 3. **Do not use a bare `/tmp/...` path** — this shell is git-bash (MSYS), whose `/tmp` is a POSIX-style alias that the native Windows `python.exe` you'll invoke in Step 3 cannot resolve (verified: it throws `FileNotFoundError`). Build a real Windows path with forward slashes instead — `$LOCALAPPDATA` is backslash-separated by default, so convert it first:
 
-**PASS:**
 ```bash
-GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --approve --body "$(cat <<'EOF'
-## Review Agent — PASS
+SCRATCH="$(echo "$LOCALAPPDATA" | tr '\\' '/')/Temp/gh-review-<PR-number>"
+mkdir -p "$SCRATCH"
+```
 
-[Full REVIEW REPORT here]
+Write each piece of free text using a **quoted heredoc** (`<<'EOF'`, with the quotes around `EOF`) so `$`, backticks, and quotes inside the finding text are never touched by the shell:
+
+```bash
+cat > "$SCRATCH/body.md" <<'EOF'
+## Review Agent — <VERDICT>
+
+[Summary only — verdict, automated-check results, counts, and any "N/A — whole PR" structural
+findings. Do NOT repeat findings that have a file/line here — those become inline comments.]
+
+---
+*Review Agent — automated code review. Findings are grounded in the approved plan,
+`shared/conventions.md`, and security standards. To question a finding, reply to this review or
+one of its inline comments — the user and executor can both respond.*
+EOF
+
+cat > "$SCRATCH/finding-1.md" <<'EOF'
+[BLOCKER] B1 — <title>
+
+Issue: <what is wrong, with specific evidence>
+Fix: <exact change required>
+EOF
+```
+
+Repeat one `finding-N.md` per finding that has a concrete `File: <path>:<line>`. Skip whole-PR findings here — they belong only in `body.md`.
+
+**Step 2 — Write a manifest pointing at each comment's file/line.** This is plain structured JSON with no free text in it, so a normal (unquoted) heredoc is fine — it needs to expand `$SCRATCH`:
+
+```bash
+cat > "$SCRATCH/manifest.json" <<EOF
+{
+  "body_file": "$SCRATCH/body.md",
+  "event": "<APPROVE | COMMENT | REQUEST_CHANGES — see mapping below>",
+  "comments": [
+    {"path": "<exact file path from the finding>", "line": <line number>, "side": "RIGHT", "body_file": "$SCRATCH/finding-1.md"}
+  ]
+}
+EOF
+```
+
+Omit `comments` (or leave it `[]`) if every finding was whole-PR-only. `line` must be a line that is actually part of this PR's diff, in the file's current (head-commit) content — the same `file:line` already required in the FINDINGS section works directly here. Always use `"side": "RIGHT"` — findings describe the code as it now stands, never the pre-change version.
+
+**Step 3 — Assemble the JSON payload and post it:**
+
+```bash
+python -c "
+import json
+with open(r'$SCRATCH/manifest.json', encoding='utf-8') as f:
+    m = json.load(f)
+payload = {'body': open(m['body_file'], encoding='utf-8').read(), 'event': m['event']}
+if m.get('comments'):
+    payload['comments'] = [
+        {'path': c['path'], 'line': c['line'], 'side': c.get('side', 'RIGHT'),
+         'body': open(c['body_file'], encoding='utf-8').read()}
+        for c in m['comments']
+    ]
+print(json.dumps(payload))
+" > "$SCRATCH/payload.json"
+
+REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+GH_TOKEN="$GH_TOKEN_REVIEWER" gh api "repos/$REPO/pulls/<PR-number>/reviews" \
+  --method POST --input "$SCRATCH/payload.json"
+```
+
+**Verdict → `event` mapping** (same meaning as before, now the API's `event` field instead of a `gh pr review` flag):
+
+| Verdict | `event` |
+|---|---|
+| PASS | `APPROVE` |
+| CONDITIONAL | `COMMENT` |
+| FAIL | `REQUEST_CHANGES` |
+
+**Fallback — inline post failed.** If the `gh api` call fails for any reason (a line not actually part of the diff, malformed payload, permissions), do not silently drop the review. Post the whole REVIEW REPORT as one body via the plain `gh pr review` command instead, so the review is never lost, and say explicitly in conversation that inline comments failed and this PR's review was posted as one block:
+
+```bash
+GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --<approve|comment|request-changes> --body "$(cat <<'EOF'
+## Review Agent — <VERDICT>
+
+[Full REVIEW REPORT here, with all findings]
 
 ---
 *Review Agent — automated code review. Findings are grounded in the approved plan, `shared/conventions.md`, and security standards. To question a finding, reply to this review — the user and executor can both respond.*
@@ -379,35 +456,9 @@ EOF
 )"
 ```
 
-**CONDITIONAL:**
-```bash
-GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --comment --body "$(cat <<'EOF'
-## Review Agent — CONDITIONAL
+**Fallback — token missing.** If `GH_TOKEN_REVIEWER` is not set in the environment, do not fail silently and do not fall back to `--comment` for this reason alone — note explicitly in conversation that the reviewer bot token is missing, fall back to posting under the default `gh` session (same commands, no `GH_TOKEN` prefix), and flag that the verdict may post as a comment instead of an approval if the default session is also the PR author (self-approval restriction).
 
-[Full REVIEW REPORT here, with all findings]
-
----
-*Review Agent — automated code review. To address a finding: fix it and push to this branch. To question a finding: reply to this review with your reasoning — the user will weigh in. Minor findings do not block the Tech Lead alignment review.*
-EOF
-)"
-```
-
-**FAIL:**
-```bash
-GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
-## Review Agent — FAIL
-
-[Full REVIEW REPORT here, with all findings]
-
----
-*Review Agent — automated code review. Blocker findings must be resolved before this PR can proceed. To address: fix the blockers, push to this branch, and the executor will re-spawn the Review Agent. To question a finding: reply to this review — the user will weigh in.*
-EOF
-)"
-```
-
-If `GH_TOKEN_REVIEWER` is not set in the environment, do not fail silently and do not fall back to `--comment` for this reason alone — note explicitly in conversation that the reviewer bot token is missing, fall back to posting under the default `gh` session (same command, no `GH_TOKEN` prefix), and flag that the verdict may post as a comment instead of an approval if the default session is also the PR author (self-approval restriction).
-
-If the `gh` command fails for any other reason (not authenticated, no remote, wrong repo), note the failure in conversation and include the full REVIEW REPORT in conversation so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post — report the failure explicitly.
+If the post fails for a reason unrelated to the token (not authenticated, no remote, wrong repo), note the failure in conversation and include the full REVIEW REPORT in conversation so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post — report the failure explicitly.
 
 ---
 

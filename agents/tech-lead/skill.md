@@ -448,30 +448,34 @@ All implementation decisions match the approved tech plan.
 [Optional: note any minor observations that do not affect verdict]
 
 [If DRIFT DETECTED:]
-Finding 1 — [area]: [what the plan specified vs. what was implemented, with location reference]
+Finding 1 — [area]: [what the plan specified vs. what was implemented]
+File: [path]:[line]  (or "N/A — whole PR" for structural/cross-cutting drift with no single location)
 Finding 2 — [area]: ...
+File: [path]:[line]
 
 Impact: [does this drift affect other executors, security, or correctness?]
 Recommendation: [what the executor should change before this can be approved]
 ```
 
+Each finding needs its own `File:` line — this is what lets Step 5 attach it as an inline GitHub comment instead of folding it into one block of text.
+
 Do not merge these findings with the Review Agent's report yourself. Both reports are presented to the user together. The user decides whether to proceed, revise, or reject.
 
 ### Step 5 — Post the alignment report to GitHub
 
-After producing the alignment report in conversation, post it to the PR so it appears alongside the Review Agent's report. This gives the executor and user a single place on GitHub where both reviews are visible.
+After producing the alignment report in conversation, post it to the PR so it appears alongside the Review Agent's report. For DRIFT DETECTED, attach each finding as an inline comment on its exact file and line (same approach as the Review Agent) instead of one large text block — this puts each finding directly next to the code it's about, and gives the executor a separate thread per finding. ALIGNED has no findings to attach, so it posts as a single approval body.
 
-Extract the PR number from the URL provided in the Spawn Request.
+Extract the PR number from the URL provided in the Spawn Request. Resolve `owner/repo` by running `gh repo view --json nameWithOwner -q .nameWithOwner` from inside the repo, rather than parsing it from the URL — **the repo may have been renamed on GitHub since the Spawn Request URL or local clone was created** (verified in practice: a stale `owner/old-name` in a `gh api` call gets a `307 Moved Permanently`, which `gh api` does not auto-follow on `POST`, so the review silently fails to post). `gh repo view` always resolves the current canonical name.
 
-Post using the Tech Lead bot identity via the `GH_TOKEN_TECHLEAD` environment variable — never the default `gh` session, and never the Review Agent's `GH_TOKEN_REVIEWER`. **Do not rely on `$GH_TOKEN_TECHLEAD` being present in your shell's inherited environment** — it is a Windows user-level environment variable, and a shell/session started before the token was set will not see it even though it exists. Instead, read it live from the registry once, into a local shell variable, before your first `gh pr review` call:
+Post using the Tech Lead bot identity via the `GH_TOKEN_TECHLEAD` environment variable — never the default `gh` session, and never the Review Agent's `GH_TOKEN_REVIEWER`. **Do not rely on `$GH_TOKEN_TECHLEAD` being present in your shell's inherited environment** — it is a Windows user-level environment variable, and a shell/session started before the token was set will not see it even though it exists. Instead, read it live from the registry once, into a local shell variable, before your first GitHub call:
 
 ```bash
 GH_TOKEN_TECHLEAD="$(powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable('GH_TOKEN_TECHLEAD','User')")"
 ```
 
-If this returns empty, the token genuinely is not set — fall back per the missing-token rule below. Otherwise, prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_TECHLEAD"` (the local variable you just captured) so the review posts as the bot account, distinct from whichever identity opened the PR. This same identity is used by the Design Agent if it ever gains GitHub posting.
+If this returns empty, the token genuinely is not set — fall back per the missing-token rule below. This same identity is used by the Design Agent if it ever gains GitHub posting.
 
-**ALIGNED:**
+**ALIGNED — single approval, no inline comments needed:**
 ```bash
 GH_TOKEN="$GH_TOKEN_TECHLEAD" gh pr review <PR-number> --approve --body "$(cat <<'EOF'
 ## Tech Lead — Alignment Review: ALIGNED
@@ -484,7 +488,69 @@ EOF
 )"
 ```
 
-**DRIFT DETECTED:**
+**DRIFT DETECTED — inline comment per finding:**
+
+`gh pr review`'s CLI flags cannot post inline comments — only GitHub's Pull Request Review API can (`POST /repos/{owner}/{repo}/pulls/{number}/reviews`), which needs a JSON payload. Rather than hand-escape markdown into JSON, write the body and each finding to their own scratch files, then let Python assemble and JSON-escape everything. **Do not use a bare `/tmp/...` path** — this shell is git-bash (MSYS), whose `/tmp` is a POSIX-style alias that the native Windows `python.exe` invoked below cannot resolve (verified: it throws `FileNotFoundError`). Build a real Windows path with forward slashes instead — `$LOCALAPPDATA` is backslash-separated by default, so convert it first:
+
+```bash
+SCRATCH="$(echo "$LOCALAPPDATA" | tr '\\' '/')/Temp/gh-alignment-<PR-number>"
+mkdir -p "$SCRATCH"
+
+cat > "$SCRATCH/body.md" <<'EOF'
+## Tech Lead — Alignment Review: DRIFT DETECTED
+
+Plan: [plan file path]
+Executor: [which executor]
+Branch: [branch name]
+
+Impact: [does this drift affect other executors, security, or correctness?]
+Recommendation: [what the executor should change before this can be approved]
+
+---
+*Tech Lead alignment review — verifies implementation against the approved tech plan. To question
+a finding, reply to this review or one of its inline comments. The user will weigh in. The
+executor must address all drift findings before this PR can proceed.*
+EOF
+
+cat > "$SCRATCH/finding-1.md" <<'EOF'
+Finding 1 — [area]
+
+[what the plan specified vs. what was implemented]
+EOF
+
+cat > "$SCRATCH/manifest.json" <<EOF
+{
+  "body_file": "$SCRATCH/body.md",
+  "event": "REQUEST_CHANGES",
+  "comments": [
+    {"path": "<exact file path from the finding>", "line": <line number>, "side": "RIGHT", "body_file": "$SCRATCH/finding-1.md"}
+  ]
+}
+EOF
+
+python -c "
+import json
+with open(r'$SCRATCH/manifest.json', encoding='utf-8') as f:
+    m = json.load(f)
+payload = {'body': open(m['body_file'], encoding='utf-8').read(), 'event': m['event']}
+if m.get('comments'):
+    payload['comments'] = [
+        {'path': c['path'], 'line': c['line'], 'side': c.get('side', 'RIGHT'),
+         'body': open(c['body_file'], encoding='utf-8').read()}
+        for c in m['comments']
+    ]
+print(json.dumps(payload))
+" > "$SCRATCH/payload.json"
+
+REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+GH_TOKEN="$GH_TOKEN_TECHLEAD" gh api "repos/$REPO/pulls/<PR-number>/reviews" \
+  --method POST --input "$SCRATCH/payload.json"
+```
+
+Repeat one `finding-N.md` + one `comments` entry per finding. A finding marked `File: N/A — whole PR` has no line to attach to — fold it into `body.md` instead of giving it a `finding-N.md`/manifest entry. `line` must be a line that is actually part of this PR's diff, in the file's current (head-commit) content. Always use `"side": "RIGHT"`.
+
+**Fallback — inline post failed.** If the `gh api` call fails for any reason (a line not actually part of the diff, malformed payload, permissions), post the whole alignment report as one body via the plain `gh pr review --request-changes` command instead, so the review is never lost, and say explicitly in conversation that inline comments failed and this PR's review was posted as one block:
+
 ```bash
 GH_TOKEN="$GH_TOKEN_TECHLEAD" gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
 ## Tech Lead — Alignment Review: DRIFT DETECTED
@@ -497,7 +563,7 @@ EOF
 )"
 ```
 
-If `GH_TOKEN_TECHLEAD` is not set in the environment, do not fail silently. Note explicitly in conversation that the tech-lead bot token is missing, then fall back to posting under the default `gh` session (same command, no `GH_TOKEN` prefix) so the review still posts rather than being skipped — flag that it may need to post as a comment instead of an approval if the default session is also the PR author (self-approval restriction).
+**Fallback — token missing.** If `GH_TOKEN_TECHLEAD` is not set in the environment, do not fail silently. Note explicitly in conversation that the tech-lead bot token is missing, then fall back to posting under the default `gh` session (same commands, no `GH_TOKEN` prefix) so the review still posts rather than being skipped — flag that it may need to post as a comment instead of an approval if the default session is also the PR author (self-approval restriction).
 
 If the `gh` command fails for any other reason, note the failure in conversation and include the full report there so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post.
 
