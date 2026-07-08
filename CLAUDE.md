@@ -299,6 +299,18 @@ These rules apply to all executor agents: Executor-React, Executor-Godot, Execut
 3. **Open a pull request** when implementation is complete, targeting `main`. The PR description must summarise what was built and reference the approved tech plan.
 4. **Do not merge**. The PR sits open until both the Review Agent and Tech Lead Agent (alignment review mode) have submitted their approval reports. Merging is a USER CHECKPOINT — the user decides when to merge after seeing both reports.
 
+### GitHub Bot Identities
+
+Executors commit, push, and open pull requests under the user's own GitHub account. Reviewing identities are separate bot accounts so PRs can receive real GitHub approvals instead of self-review comment fallbacks:
+
+| Identity | Used by | Environment variable |
+|---|---|---|
+| User's own account | All Executors (commits, pushes, PR creation) | (default `gh` session) |
+| Tech Lead bot | Tech Lead Agent (alignment review mode); Design Agent, if it ever posts to GitHub | `GH_TOKEN_TECHLEAD` |
+| Reviewer bot | Review Agent (spawned by Executors) | `GH_TOKEN_REVIEWER` |
+
+Both tokens are stored as user-level Windows environment variables — never in a repo file, never in a skill file, never printed in conversation or agent output. Skill files reference only the environment variable name. If a token is unset when an agent needs to post, the agent notes this explicitly and falls back to the default `gh` session rather than failing silently.
+
 ---
 
 ## Orchestration Protocol

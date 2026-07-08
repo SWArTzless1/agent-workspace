@@ -356,11 +356,13 @@ After producing the REVIEW REPORT in conversation, post it as a GitHub PR review
 
 Extract the PR number from the URL (e.g., `https://github.com/owner/repo/pull/123` → `123`).
 
+Post using the Review Agent bot identity via the `GH_TOKEN_REVIEWER` environment variable — never the default `gh` session, and never the Tech Lead's `GH_TOKEN_TECHLEAD`. Prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_REVIEWER"` so the review posts as the bot account, distinct from whichever identity opened the PR.
+
 Post using the verdict-appropriate event type:
 
 **PASS:**
 ```bash
-gh pr review <PR-number> --approve --body "$(cat <<'EOF'
+GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --approve --body "$(cat <<'EOF'
 ## Review Agent — PASS
 
 [Full REVIEW REPORT here]
@@ -373,7 +375,7 @@ EOF
 
 **CONDITIONAL:**
 ```bash
-gh pr review <PR-number> --comment --body "$(cat <<'EOF'
+GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --comment --body "$(cat <<'EOF'
 ## Review Agent — CONDITIONAL
 
 [Full REVIEW REPORT here, with all findings]
@@ -386,7 +388,7 @@ EOF
 
 **FAIL:**
 ```bash
-gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
+GH_TOKEN="$GH_TOKEN_REVIEWER" gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
 ## Review Agent — FAIL
 
 [Full REVIEW REPORT here, with all findings]
@@ -397,7 +399,9 @@ EOF
 )"
 ```
 
-If the `gh` command fails (not authenticated, no remote, wrong repo), note the failure in conversation and include the full REVIEW REPORT in conversation so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post — report the failure explicitly.
+If `GH_TOKEN_REVIEWER` is not set in the environment, do not fail silently and do not fall back to `--comment` for this reason alone — note explicitly in conversation that the reviewer bot token is missing, fall back to posting under the default `gh` session (same command, no `GH_TOKEN` prefix), and flag that the verdict may post as a comment instead of an approval if the default session is also the PR author (self-approval restriction).
+
+If the `gh` command fails for any other reason (not authenticated, no remote, wrong repo), note the failure in conversation and include the full REVIEW REPORT in conversation so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post — report the failure explicitly.
 
 ---
 

@@ -463,9 +463,11 @@ After producing the alignment report in conversation, post it to the PR so it ap
 
 Extract the PR number from the URL provided in the Spawn Request.
 
+Post using the Tech Lead bot identity via the `GH_TOKEN_TECHLEAD` environment variable — never the default `gh` session, and never the Review Agent's `GH_TOKEN_REVIEWER`. Prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_TECHLEAD"` so the review posts as the bot account, distinct from whichever identity opened the PR. This same identity is used by the Design Agent if it ever gains GitHub posting.
+
 **ALIGNED:**
 ```bash
-gh pr review <PR-number> --approve --body "$(cat <<'EOF'
+GH_TOKEN="$GH_TOKEN_TECHLEAD" gh pr review <PR-number> --approve --body "$(cat <<'EOF'
 ## Tech Lead — Alignment Review: ALIGNED
 
 [Full alignment report here]
@@ -478,7 +480,7 @@ EOF
 
 **DRIFT DETECTED:**
 ```bash
-gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
+GH_TOKEN="$GH_TOKEN_TECHLEAD" gh pr review <PR-number> --request-changes --body "$(cat <<'EOF'
 ## Tech Lead — Alignment Review: DRIFT DETECTED
 
 [Full alignment report here]
@@ -489,7 +491,9 @@ EOF
 )"
 ```
 
-If the `gh` command fails, note the failure in conversation and include the full report there so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post.
+If `GH_TOKEN_TECHLEAD` is not set in the environment, do not fail silently. Note explicitly in conversation that the tech-lead bot token is missing, then fall back to posting under the default `gh` session (same command, no `GH_TOKEN` prefix) so the review still posts rather than being skipped — flag that it may need to post as a comment instead of an approval if the default session is also the PR author (self-approval restriction).
+
+If the `gh` command fails for any other reason, note the failure in conversation and include the full report there so the main conversation can still present the Phase Checkpoint. Do not silently skip the GitHub post.
 
 Once the GitHub post is complete, your session is complete. You do not coordinate with the Review Agent, combine reports, or route further work. The main conversation presents both reports to the user and handles the merge decision checkpoint.
 
