@@ -356,7 +356,13 @@ After producing the REVIEW REPORT in conversation, post it as a GitHub PR review
 
 Extract the PR number from the URL (e.g., `https://github.com/owner/repo/pull/123` → `123`).
 
-Post using the Review Agent bot identity via the `GH_TOKEN_REVIEWER` environment variable — never the default `gh` session, and never the Tech Lead's `GH_TOKEN_TECHLEAD`. Prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_REVIEWER"` so the review posts as the bot account, distinct from whichever identity opened the PR.
+Post using the Review Agent bot identity via the `GH_TOKEN_REVIEWER` environment variable — never the default `gh` session, and never the Tech Lead's `GH_TOKEN_TECHLEAD`. **Do not rely on `$GH_TOKEN_REVIEWER` being present in your shell's inherited environment** — it is a Windows user-level environment variable, and a shell/session started before the token was set will not see it even though it exists. Instead, read it live from the registry once, into a local shell variable, before your first `gh pr review` call:
+
+```bash
+GH_TOKEN_REVIEWER="$(powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable('GH_TOKEN_REVIEWER','User')")"
+```
+
+If this returns empty, the token genuinely is not set — fall back per the missing-token rule below. Otherwise, prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_REVIEWER"` (the local variable you just captured) so the review posts as the bot account, distinct from whichever identity opened the PR.
 
 Post using the verdict-appropriate event type:
 

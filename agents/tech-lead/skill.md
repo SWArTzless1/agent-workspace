@@ -463,7 +463,13 @@ After producing the alignment report in conversation, post it to the PR so it ap
 
 Extract the PR number from the URL provided in the Spawn Request.
 
-Post using the Tech Lead bot identity via the `GH_TOKEN_TECHLEAD` environment variable — never the default `gh` session, and never the Review Agent's `GH_TOKEN_REVIEWER`. Prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_TECHLEAD"` so the review posts as the bot account, distinct from whichever identity opened the PR. This same identity is used by the Design Agent if it ever gains GitHub posting.
+Post using the Tech Lead bot identity via the `GH_TOKEN_TECHLEAD` environment variable — never the default `gh` session, and never the Review Agent's `GH_TOKEN_REVIEWER`. **Do not rely on `$GH_TOKEN_TECHLEAD` being present in your shell's inherited environment** — it is a Windows user-level environment variable, and a shell/session started before the token was set will not see it even though it exists. Instead, read it live from the registry once, into a local shell variable, before your first `gh pr review` call:
+
+```bash
+GH_TOKEN_TECHLEAD="$(powershell -NoProfile -Command "[Environment]::GetEnvironmentVariable('GH_TOKEN_TECHLEAD','User')")"
+```
+
+If this returns empty, the token genuinely is not set — fall back per the missing-token rule below. Otherwise, prefix every `gh pr review` call with `GH_TOKEN="$GH_TOKEN_TECHLEAD"` (the local variable you just captured) so the review posts as the bot account, distinct from whichever identity opened the PR. This same identity is used by the Design Agent if it ever gains GitHub posting.
 
 **ALIGNED:**
 ```bash
