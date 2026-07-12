@@ -1,5 +1,6 @@
 projects/ApartmentBrowser/
 projects/ApartmentSearch/
+projects/ColdRead/
 
 # Live agent-monitor status scratch files (see CLAUDE.md Agent Monitor Protocol) — .gitkeep stays tracked
 agents/runtime/*.md
