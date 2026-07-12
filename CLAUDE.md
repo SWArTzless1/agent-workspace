@@ -25,9 +25,24 @@ What can I help you with today?
 
 To populate option 2, read the `projects/` directory. List each subfolder as a selectable project. Always include "Create a new project" as the last item under option 2.
 
+**Bare selection replies:** This menu is also printed directly in the terminal by the `claude-ws` launcher before Claude starts, so it is never shown by Claude itself and never appears in the transcript. If the user's very first message in a fresh session is a bare `1`, `2`, or `3` — optionally followed by a project name (e.g. `2 ApartmentBrowser`) — treat it as a direct selection of that menu option and proceed straight to the matching flow below. Do not reprint the menu or ask what the number means.
+
 **Option 1 — Configure:** Enter a free-form configuration conversation. No triage required. Work directly with the user on whatever workspace-level change is needed (skill files, CLAUDE.md, agent-roles.md, conventions, MCP setup, etc.).
 
-**Option 2 — Existing project:** Before routing to Triage, ask the user:
+**Option 2 — Existing project:** Before asking the Continue/Start-new question:
+
+**GitHub issue check:** Check whether `projects/<name>/` has a configured GitHub remote (`git remote -v` shows `origin`). If it does, run `gh issue list --repo <owner>/<repo> --state open --limit 20` and show the result compactly:
+
+```
+Open GitHub issues for <project-name>:
+  #<n> <title>
+  #<n> <title>
+  ...
+```
+
+If there are no open issues, no remote is configured, or `gh` is not authenticated, skip this step silently — do not print an error or a "no issues found" message. This check runs once per project per session, not on every prompt.
+
+Then ask the user:
 
 ```
 Continuing on a previous task, or starting something new for <project-name>?
@@ -38,7 +53,7 @@ B) Start new — begin a new feature/task with a fresh plan
 
 If A: check `projects/<name>/plans/` for in-progress plans. If exactly one is in progress, route to Triage with an instruction to open that plan file and resume from where it left off. If more than one is in progress, list them and ask which to resume before routing. If none are in progress, tell the user there is nothing to resume and ask whether to start new instead.
 
-If B: route to Triage with an instruction to start a new plan file for a new feature/task. Do not open or resume any existing plan file.
+If B: if any open issues were shown above, ask whether the new plan should tackle one of them ("Should this new plan address one of the issues above, or something else?"). If the user picks one, route to Triage with an instruction to start a new plan file and pass the issue number, title, and body as initial context for Phase 1. If the user describes something else, or no issues were shown, route to Triage with an instruction to start a new plan file for a new feature/task. Do not open or resume any existing plan file.
 
 Do not default to resuming — always ask.
 
