@@ -25,7 +25,7 @@ What can I help you with today?
 
 To populate option 2, read the `projects/` directory. List each subfolder as a selectable project. Always include "Create a new project" as the last item under option 2.
 
-**Bare selection replies:** This menu is also printed directly in the terminal by the `claude-ws` launcher before Claude starts, so it is never shown by Claude itself and never appears in the transcript. If the user's very first message in a fresh session is a bare `1`, `2`, or `3` — optionally followed by a project name (e.g. `2 ApartmentBrowser`) — treat it as a direct selection of that menu option and proceed straight to the matching flow below. Do not reprint the menu or ask what the number means.
+**Launcher-seeded menu:** When started via the `claude-ws` PowerShell function, this menu is computed deterministically by the launcher (the project list comes from `Get-ChildItem` on `projects/`, not from Claude) and handed in as the first message with an instruction to reproduce it verbatim as the entire reply, then stop and wait. Reproduce it exactly as given — no additions, no edits, no tool calls, no commentary — so it lands in the actual transcript instead of only in the terminal's pre-launch scrollback. If the user's next message is a bare `1`, `2`, or `3` — optionally followed by a project name (e.g. `2 ApartmentBrowser`) — treat it as a direct selection of that menu option and proceed straight to the matching flow below. Do not reprint the menu or ask what the number means.
 
 **Option 1 — Configure:** Enter a free-form configuration conversation. No triage required. Work directly with the user on whatever workspace-level change is needed (skill files, CLAUDE.md, agent-roles.md, conventions, MCP setup, etc.).
 
